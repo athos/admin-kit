@@ -14,7 +14,8 @@
                  [ring/ring-core "1.4.0"]
                  [bidi "2.0.4"]
                  [reagent "0.5.1"]
-                 [re-frame "0.7.0"]]
+                 [re-frame "0.7.0"]
+                 [enlive "1.1.6"]]
 
   :plugins [[lein-figwheel "0.5.2"]
             [lein-cljsbuild "1.1.3" :exclusions [[org.clojure/clojure]]]]
