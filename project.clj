@@ -1,4 +1,4 @@
-(defproject superficial "0.1.0-SNAPSHOT"
+(defproject lustered "0.1.0-SNAPSHOT"
   :description "Admin site as data"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -31,11 +31,11 @@
                 :source-paths ["src/cljs" "src/cljc"]
 
                 ;; If no code is to be run, set :figwheel true for continued automagical reloading
-                :figwheel {:on-jsload "superficial.core/on-js-reload"}
+                :figwheel {:on-jsload "lustered.core/on-js-reload"}
 
-                :compiler {:main superficial.core
+                :compiler {:main lustered.core
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/superficial.js"
+                           :output-to "resources/public/js/compiled/lustered.js"
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true}}
                ;; This next build is an compressed minified build for
@@ -43,8 +43,8 @@
                ;; lein cljsbuild once min
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
-                :compiler {:output-to "resources/public/js/compiled/superficial.js"
-                           :main superficial.core
+                :compiler {:output-to "resources/public/js/compiled/lustered.js"
+                           :main lustered.core
                            :optimizations :advanced
                            :pretty-print false}}]}
 

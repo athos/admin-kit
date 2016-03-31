@@ -3,7 +3,7 @@
             [environ.core :refer [env]]
             [ring.util.response :refer [response]]
             [ring.adapter.jetty :refer [run-jetty]]
-            [superficial.handler :as sup]))
+            [lustered.handler :as lustered]))
 
 (def sample-products
   (let [now (java.util.Date.)
@@ -34,7 +34,7 @@
              :title "最終更新日"}]
    :on-read (fn [& args] sample-products)})
 
-(def app (sup/make-admin-page-handler "/admin" admin-page-spec))
+(def app (lustered/make-admin-page-handler "/admin" admin-page-spec))
 
 (defn start-server []
   (let [port (Long/parseLong (get env :port "8080"))]

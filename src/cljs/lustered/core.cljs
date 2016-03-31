@@ -1,4 +1,4 @@
-(ns superficial.core
+(ns lustered.core
   (:require [reagent.core :as reagent]))
 
 (enable-console-print!)
