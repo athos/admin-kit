@@ -2,7 +2,8 @@
   (:require [clojure.repl :refer :all]
             [clojure.pprint :refer [pp pprint]]
             [mount.core :as m]
-            [clojure.tools.namespace.repl :refer [refresh]]))
+            [clojure.tools.namespace.repl :refer [refresh]]
+            [superficial.handler :as sup]))
 
 (defn go []
   (m/start))
