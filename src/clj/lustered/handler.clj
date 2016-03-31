@@ -7,6 +7,7 @@
              [route :as route]]
             [ring.middleware
              [defaults :refer [wrap-defaults site-defaults api-defaults]]]
+            [ring.middleware.format :refer [wrap-restful-format]]
             [clojure.java.io :as io]))
 
 (defstate page-template
@@ -27,10 +28,15 @@
 (defn make-api-routes [page-name spec]
   (let [{:keys [on-create on-read on-update on-delete]} spec]
     (-> (routes
-         (GET page-name [] "read")
-         (POST page-name [] "create")
-         (PUT (str page-name "/:id") [] "update")
-         (DELETE (str page-name "/:id") [] "delete"))
+         (GET page-name {:keys [params]}
+           (res/response (on-read params)))
+         (POST page-name {:keys [params]}
+           (res/response (on-create params)))
+         (PUT (str page-name "/:id") {:keys [params]}
+           (res/response (on-update params)))
+         (DELETE (str page-name "/:id") {:keys [params]}
+           (res/response (on-delete params))))
+        (wrap-restful-format :formats [:transit-json])
         (wrap-defaults api-defaults))))
 
 (defn make-admin-page-handler [root-path {page-name :name :as spec}]
