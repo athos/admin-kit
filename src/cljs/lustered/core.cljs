@@ -12,31 +12,35 @@
  :init
  (fn [_ _]
    (ajax/ajax-request
-    {:uri "/admin/api/products"
+    {:uri "/admin/api/products/_spec"
      :method :get
-     :handler (fn [[ok? result]] (r/dispatch [:post-init result]))
+     :handler (fn [[ok? spec]] (r/dispatch [:save-spec spec]))
      :format (ajax/transit-request-format)
      :response-format (ajax/transit-response-format)})
    {}))
 
 (r/register-handler
- :post-init
+ :save-spec
  [r/trim-v]
- (fn [db [data]]
-   (assoc db :data data)))
+ (fn [db [spec]]
+   (assoc db :spec spec)))
 
 (r/register-sub
- :data
+ :spec
  (fn [db _]
-   (reaction (:data @db))))
+   (reaction (:spec @db))))
 
 (defn app []
-  (let [data (r/subscribe [:data])]
+  (let [spec (r/subscribe [:spec])]
     (fn []
-      (when @data
-        `[:ul
-          ~@(for [{:keys [name]} @data]
-              [:li name])]))))
+      (when @spec
+        `[:div
+          [:h1 ~(:title @spec)]
+          [:table
+           [:thead
+            [:tr
+             ~@(for [{:keys [title]} (:fields @spec)]
+                 [:th title])]]]]))))
 
 (defn ^:export main []
   (r/dispatch [:init])
