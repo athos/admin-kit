@@ -1,5 +1,6 @@
 (ns superficial.handler
-  (:require [net.cgrand.enlive-html :refer [deftemplate]]
+  (:require [mount.core :refer [defstate]]
+            [net.cgrand.enlive-html :as enlive]
             [bidi
              [bidi :as bidi]
              [ring :as ring]]
@@ -7,10 +8,11 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [clojure.java.io :as io]))
 
-(deftemplate page (io/resource "public/index.html") [])
+(defstate page-template
+  :start (enlive/template (io/resource "public/index.html") []))
 
 (defn root-page-handler [req]
-  (-> (res/response (apply str (page)))
+  (-> (res/response (apply str (page-template)))
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
