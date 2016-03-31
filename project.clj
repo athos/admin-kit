@@ -13,7 +13,8 @@
                   :exclusions [org.clojure/tools.reader]]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
-                 [bidi "2.0.4"]
+                 [compojure "1.5.0"]    ;; for server side
+                 [bidi "2.0.4"]         ;; for client side
                  [reagent "0.5.1"]
                  [re-frame "0.7.0"]
                  [enlive "1.1.6"]]

@@ -1,35 +1,41 @@
 (ns superficial.handler
   (:require [mount.core :refer [defstate]]
             [net.cgrand.enlive-html :as enlive]
-            [bidi
-             [bidi :as bidi]
-             [ring :as ring]]
             [ring.util.response :as res]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [compojure
+             [core :refer :all]
+             [route :as route]]
+            [ring.middleware
+             [defaults :refer [wrap-defaults site-defaults api-defaults]]]
             [clojure.java.io :as io]))
 
 (defstate page-template
   :start (enlive/template (io/resource "public/index.html") []))
 
-(defn root-page-handler [req]
+(defn render-root-page []
   (-> (res/response (apply str (page-template)))
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
-(defn make-crud-handlers [spec]
+(defn make-site-routes [page-name spec]
+  (-> (routes
+       (GET page-name [] (render-root-page))
+       (GET (str page-name "/*") [] (render-root-page))
+       (route/resources "public"))
+      (wrap-defaults site-defaults)))
+
+(defn make-api-routes [page-name spec]
   (let [{:keys [on-create on-read on-update on-delete]} spec]
-    {:get {"" (fn [req] (res/response "read"))}
-     :post {"" (fn [req] (res/response "create"))}
-     :put {["/" :id] (fn [req] (res/response "update"))}
-     :delete {["/" :id] (fn [req] (res/response "delete"))}}))
+    (-> (routes
+         (GET page-name [] "read")
+         (POST page-name [] "create")
+         (PUT (str page-name "/:id") [] "update")
+         (DELETE (str page-name "/:id") [] "delete"))
+        (wrap-defaults api-defaults))))
 
-(defn make-routes [^String path {page-name :name :as spec}]
-  (let [path (if (.endsWith path "/") path (str path "/"))
-        page-name (name page-name)]
-    [path {page-name {true (-> root-page-handler
-                               (wrap-defaults site-defaults))}
-           ["api/" page-name] (make-crud-handlers spec)}]))
-
-(defn make-admin-page-handler [path spec]
-  (let [routes (make-routes path spec)]
-    (ring/make-handler routes)))
+(defn make-admin-page-handler [root-path {page-name :name :as spec}]
+  (let [page-name (str "/" (name page-name))]
+    (context root-path []
+      (context "/api" []
+        (make-api-routes page-name spec))
+      (make-site-routes page-name spec))))
