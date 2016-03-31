@@ -24,8 +24,8 @@
 (defn make-routes [^String path {page-name :name :as spec}]
   (let [path (if (.endsWith path "/") path (str path "/"))
         page-name (name page-name)]
-    [path {page-name (-> root-page-handler
-                         (wrap-defaults site-defaults))
+    [path {page-name {true (-> root-page-handler
+                               (wrap-defaults site-defaults))}
            ["api/" page-name] (make-crud-handlers spec)}]))
 
 (defn make-admin-page-handler [path spec]
