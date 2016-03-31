@@ -10,7 +10,9 @@
 (deftemplate page (io/resource "public/index.html") [])
 
 (defn root-page-handler [req]
-  (res/response (apply str (page))))
+  (-> (res/response (apply str (page)))
+      (res/content-type "text/html")
+      (res/charset "utf-8")))
 
 (defn make-crud-handlers [spec]
   (let [{:keys [on-create on-read on-update on-delete]} spec]
