@@ -4,6 +4,7 @@
              [bidi :as bidi]
              [ring :as ring]]
             [ring.util.response :as res]
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [clojure.java.io :as io]))
 
 (deftemplate page (io/resource "public/index.html") [])
@@ -20,7 +21,8 @@
 
 (defn make-routes [{page-name :name :as spec}]
   (let [page-name (name page-name)]
-    ["/" {page-name root-page-handler
+    ["/" {page-name (-> root-page-handler
+                         (wrap-defaults site-defaults))
           ["api/" page-name] (make-crud-handlers spec)}]))
 
 (defn make-admin-page-handler [spec]

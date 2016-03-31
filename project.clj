@@ -12,6 +12,7 @@
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  [ring/ring-core "1.4.0"]
+                 [ring/ring-defaults "0.2.0"]
                  [bidi "2.0.4"]
                  [reagent "0.5.1"]
                  [re-frame "0.7.0"]
