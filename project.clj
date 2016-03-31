@@ -11,6 +11,7 @@
                  [mount "0.1.10"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
+                 [ring-middleware-format "0.7.0"]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
                  [compojure "1.5.0"]
@@ -18,6 +19,7 @@
 
                  ;; for client side
                  [org.clojure/clojurescript "1.8.40"]
+                 [cljs-ajax "0.5.4"]
                  [bidi "2.0.4"]
                  [reagent "0.5.1"]
                  [re-frame "0.7.0"]
