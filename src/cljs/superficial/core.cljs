@@ -1,14 +1,15 @@
 (ns superficial.core
-  (:require ))
+  (:require [reagent.core :as reagent]))
 
 (enable-console-print!)
 
 (println "Edits to this text should show up in your developer console.")
 
-;; define your app data so that it doesn't get over-written on reload
+(defn app []
+  [:h1 "Welcome to admin page!!"])
 
-(defonce app-state (atom {:text "Hello world!"}))
-
+(defn ^:export main []
+  (reagent/render [app] (.getElementById js/document "app")))
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
