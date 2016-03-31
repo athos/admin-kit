@@ -11,6 +11,8 @@
 (defn ^:export main []
   (reagent/render [app] (.getElementById js/document "app")))
 
+(.addEventListener js/window "load" main)
+
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
