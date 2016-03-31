@@ -8,7 +8,8 @@
             [ring.middleware
              [defaults :refer [wrap-defaults site-defaults api-defaults]]]
             [ring.middleware.format :refer [wrap-restful-format]]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.walk :as walk]))
 
 (defstate page-template
   :start (enlive/template (io/resource "public/index.html") []))
@@ -25,6 +26,14 @@
        (route/resources "public"))
       (wrap-defaults site-defaults)))
 
+(defn remove-fns [spec]
+  (walk/prewalk
+    (fn [x]
+      (if (map? x)
+        (reduce-kv #(if (fn? %3) %1 (assoc %1 %2 %3)) {} x)
+        x))
+    spec))
+
 (defn make-api-routes [page-name spec]
   (let [{:keys [on-create on-read on-update on-delete]} spec]
     (-> (routes
@@ -35,7 +44,9 @@
          (PUT (str page-name "/:id") {:keys [params]}
            (res/response (on-update params)))
          (DELETE (str page-name "/:id") {:keys [params]}
-           (res/response (on-delete params))))
+           (res/response (on-delete params)))
+         (GET (str page-name "/_spec") []
+              (res/response (remove-fns spec))))
         (wrap-restful-format :formats [:transit-json])
         (wrap-defaults api-defaults))))
 
