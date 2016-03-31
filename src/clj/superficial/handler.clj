@@ -19,12 +19,13 @@
      :put {["/" :id] (fn [req] (res/response "update"))}
      :delete {["/" :id] (fn [req] (res/response "delete"))}}))
 
-(defn make-routes [{page-name :name :as spec}]
-  (let [page-name (name page-name)]
-    ["/" {page-name (-> root-page-handler
+(defn make-routes [^String path {page-name :name :as spec}]
+  (let [path (if (.endsWith path "/") path (str path "/"))
+        page-name (name page-name)]
+    [path {page-name (-> root-page-handler
                          (wrap-defaults site-defaults))
-          ["api/" page-name] (make-crud-handlers spec)}]))
+           ["api/" page-name] (make-crud-handlers spec)}]))
 
-(defn make-admin-page-handler [spec]
-  (let [routes (make-routes spec)]
+(defn make-admin-page-handler [path spec]
+  (let [routes (make-routes path spec)]
     (ring/make-handler routes)))

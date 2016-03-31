@@ -34,7 +34,7 @@
              :title "最終更新日"}]
    :on-read (fn [& args] sample-products)})
 
-(def app (sup/make-admin-page-handler admin-page-spec))
+(def app (sup/make-admin-page-handler "/admin" admin-page-spec))
 
 (defn start-server []
   (let [port (Long/parseLong (get env :port "8080"))]
