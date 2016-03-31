@@ -8,12 +8,14 @@
   
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.40"]
+                 [mount "0.1.10"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
+                 [ring/ring-core "1.4.0"]
                  [bidi "2.0.4"]
                  [reagent "0.5.1"]
                  [re-frame "0.7.0"]]
-  
+
   :plugins [[lein-figwheel "0.5.2"]
             [lein-cljsbuild "1.1.3" :exclusions [[org.clojure/clojure]]]]
 
@@ -42,6 +44,11 @@
                            :main superficial.core
                            :optimizations :advanced
                            :pretty-print false}}]}
+
+  :profiles {:dev {:source-paths ["env" "examples"]
+                   :dependencies [[org.clojure/tools.namespace "0.2.11"]
+                                  [environ "1.0.2"]
+                                  [ring/ring-jetty-adapter "1.4.0"]]}}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
              ;; :server-port 3449 ;; default
