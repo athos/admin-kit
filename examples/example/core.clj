@@ -10,38 +10,35 @@
             [lustered.handler :as lustered])
   (:import [java.util Date]))
 
-(defn inc-count!
-  ([a] (inc-count! 1 a))
-  ([n a]
-   (alter-meta! a update :count (fnil #(+ % n) 0))
-   a))
+(defn fresh-id [a]
+  (-> (alter-meta! a update :fresh-id (fnil inc 0))
+      :fresh-id))
 
-(defstate sample-products
-  :start (let [now (Date.)
-               base {:created-at now, :modified-at now}]
-           (->> [{:id 1, :name "ノート", :furigana "ノート", :price 250}
-                 {:id 2, :name "鉛筆", :furigana "エンピツ", :price 120}
-                 {:id 3, :name "消しゴム", :furigana "ケシゴム", :price 80}]
-                (mapv (partial merge base))
-                atom
-                (inc-count! 3))))
-
-(defn create! [{:keys [name furigana price]}]
-  (inc-count! sample-products)
+(defn add! [a {:keys [name furigana price]}]
   (let [now (Date.)
-        new-item {:id (:count (meta sample-products))
+        id  (fresh-id a)
+        new-item {:id id
                   :name name
                   :furigana furigana
                   :price price
                   :created-at now
                   :modified-at now}]
-    (swap! sample-products conj new-item)
+    (swap! a assoc id new-item)
     new-item))
+
+(defstate sample-products
+  :start (doto (atom {})
+           (add! {:name "ノート", :furigana "ノート", :price 250})
+           (add! {:name "鉛筆", :furigana "エンピツ", :price 120})
+           (add! { :name "消しゴム", :furigana "ケシゴム", :price 80})))
+
+(defn create! [product]
+  (add! sample-products product))
 
 (defn find [{:keys [id]}]
   (if id
-    (filterv #(= (:id %) id) @sample-products)
-    @sample-products))
+    (filter #(= (:id %) id) (vals @sample-products))
+    (sort-by :id (vals @sample-products))))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
