@@ -6,15 +6,39 @@
             [clj-time
              [coerce :as coerce]
              [format :as format]]
-            [lustered.handler :as lustered]))
+            [lustered.handler :as lustered])
+  (:import [java.util Date]))
 
-(def sample-products
-  (let [now (java.util.Date.)
-        base {:created-at now, :modified-at now}]
-    (->> [{:id 1, :name "ノート", :furigana "ノート", :price 250}
-          {:id 2, :name "鉛筆", :furigana "エンピツ", :price 120}
-          {:id 3, :name "消しゴム", :furigana "ケシゴム", :price 80}]
-         (map (partial merge base)))))
+(defn inc-count!
+  ([a] (inc-count! 1 a))
+  ([n a]
+   (alter-meta! a update :count (fnil #(+ % n) 0))
+   a))
+
+(defstate sample-products
+  :start (let [now (Date.)
+               base {:created-at now, :modified-at now}]
+           (->> [{:id 1, :name "ノート", :furigana "ノート", :price 250}
+                 {:id 2, :name "鉛筆", :furigana "エンピツ", :price 120}
+                 {:id 3, :name "消しゴム", :furigana "ケシゴム", :price 80}]
+                (mapv (partial merge base))
+                atom
+                (inc-count! 3))))
+
+(defn create! [{:keys [name furigana price]}]
+  (inc-count! sample-products)
+  (let [now (Date.)
+        new-item {:id (:count (meta sample-products))
+                  :name name
+                  :furigana furigana
+                  :price price
+                  :created-at now
+                  :modified-at now}]
+    (swap! sample-products conj new-item)
+    new-item))
+
+(defn find-all [_]
+  @sample-products)
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
@@ -40,7 +64,8 @@
             {:field :modified-at
              :title "最終更新日"
              :format date-formatter}]
-   :on-read (fn [& args] sample-products)})
+   :on-create create!
+   :on-read find-all})
 
 (def app (lustered/make-admin-page-handler "/admin" admin-page-spec))
 
