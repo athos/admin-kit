@@ -1,4 +1,5 @@
 (ns example.core
+  (:refer-clojure :exclude [find])
   (:require [mount.core :refer [defstate]]
             [environ.core :refer [env]]
             [ring.util.response :refer [response]]
@@ -37,8 +38,10 @@
     (swap! sample-products conj new-item)
     new-item))
 
-(defn find-all [_]
-  @sample-products)
+(defn find [{:keys [id]}]
+  (if id
+    (filterv #(= (:id %) id) @sample-products)
+    @sample-products))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
@@ -65,7 +68,7 @@
              :title "最終更新日"
              :format date-formatter}]
    :on-create create!
-   :on-read find-all})
+   :on-read find})
 
 (def app (lustered/make-admin-page-handler "/admin" admin-page-spec))
 
