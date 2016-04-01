@@ -61,28 +61,31 @@
  (fn [db _]
    (reaction (:items @db))))
 
+(defn items-table [spec items]
+  (let [fields (:fields spec)]
+    `[:table.table.table-striped
+      [:thead
+       [:tr
+        ~@(for [{:keys [title]} fields]
+            [:th title])]]
+      ~(when items
+         `[:tbody
+           ~@(for [item items]
+               `[:tr
+                 ~@(for [{:keys [field]} fields]
+                     [:td (get item field)])])])]))
+
 (defn app []
   (let [spec (r/subscribe [:spec])
         items (r/subscribe [:items])]
     (fn []
       (when @spec
-        (let [fields (:fields @spec)]
-          `[:div.row
-            [:div.col-md-1]
-            [:div.col-md-10
-             [:h1 ~(:title @spec)]
-             [:table.table.table-striped
-              [:thead
-               [:tr
-                ~@(for [{:keys [title]} fields]
-                    [:th title])]]
-              ~(when @items
-                 `[:tbody
-                   ~@(for [item @items]
-                       `[:tr
-                         ~@(for [{:keys [field]} fields]
-                             [:td (get item field)])])])]]
-            [:div.col-md-1]])))))
+        [:div.row
+         [:div.col-md-1]
+         [:div.col-md-10
+          [:h1 (:title @spec)]
+          [items-table @spec @items]]
+         [:div.col-md-1]]))))
 
 (defn ^:export main []
   (r/dispatch [:init])
