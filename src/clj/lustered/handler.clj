@@ -34,11 +34,34 @@
         x))
     spec))
 
+(defn field-formatters [spec]
+  (reduce (fn [m field]
+            (if-let [formatter (:format field)]
+              (assoc m (:field field) formatter)
+              m))
+          {}
+          (:fields spec)))
+
+(defn default-formatter [x]
+  (cond (number? x) x
+        :else (str x)))
+
+(defn format-item-fields [spec item]
+  (let [formatters (field-formatters spec)]
+    (reduce (fn [item field-name]
+              (let [formatter (or (get formatters field-name)
+                                  default-formatter)]
+                (update item field-name formatter)))
+            item
+            (keys item))))
+
 (defn make-api-routes [page-name spec]
   (let [{:keys [on-create on-read on-update on-delete]} spec]
     (-> (routes
          (GET page-name {:keys [params]}
-           (res/response (on-read params)))
+           (->> (on-read params)
+                (map #(format-item-fields spec %))
+                res/response))
          (POST page-name {:keys [params]}
            (res/response (on-create params)))
          (PUT (str page-name "/:id") {:keys [params]}
