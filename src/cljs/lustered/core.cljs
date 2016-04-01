@@ -9,6 +9,9 @@
 
 (println "Edits to this text should show up in your developer console.")
 
+;;
+;; General handlers
+;;
 
 (r/register-handler
  :fetch
@@ -35,6 +38,9 @@
 (defn save [key val]
   (r/dispatch [:save key val]))
 
+;;
+;; Initialization
+;;
 
 (r/register-handler
  :init
@@ -46,6 +52,10 @@
             (fetch page-name [] #(save :items %))))
    {}))
 
+;;
+;; Subscriptions
+;;
+
 (r/register-sub
  :spec
  (fn [db _]
@@ -55,6 +65,10 @@
  :items
  (fn [db _]
    (reaction (:items @db))))
+
+;;
+;; Components
+;;
 
 (defn edit-buttons []
   [:td
@@ -108,14 +122,14 @@
           [:div.col-md-1]]
          [edit-modal]]))))
 
+;;
+;; Entry point
+;;
+
 (defn ^:export main []
   (r/dispatch [:init "products"])
   (reagent/render [app] (.getElementById js/document "app")))
 
 (.addEventListener js/window "load" main)
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+(defn on-js-reload [])
