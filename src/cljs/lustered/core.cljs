@@ -8,42 +8,40 @@
 
 (println "Edits to this text should show up in your developer console.")
 
+(declare fetch-spec)
+
 (r/register-handler
  :init
  (fn [_ _]
-   (r/dispatch [:fetch-spec])
+   (fetch-spec "products")
    {}))
 
 (r/register-handler
- :fetch-spec
- [(r/path :spec)]
- (fn [_ _]
+ :fetch
+ [r/trim-v]
+ (fn [db [path cont & args]]
    (ajax/ajax-request
-    {:uri "/admin/api/products/_spec"
+    {:uri (str "/admin/api" path)
      :method :get
-     :handler (fn [[ok? spec]] (r/dispatch [:save-spec spec]))
+     :handler (fn [[ok? data]] (r/dispatch `[~cont ~data ~@args]))
      :format (ajax/transit-request-format)
      :response-format (ajax/transit-response-format)})
-   nil))
+   db))
+
+(defn fetch-spec [page-name]
+  (r/dispatch [:fetch (str "/" page-name "/_spec") :save-spec]))
+
+(declare fetch-items)
 
 (r/register-handler
  :save-spec
  [r/trim-v (r/path :spec)]
  (fn [_ [spec]]
-   (r/dispatch [:fetch-items (:name spec)])
+   (fetch-items (name (:name spec)))
    spec))
 
-(r/register-handler
- :fetch-items
- [r/trim-v (r/path :items)]
- (fn [_ [page-name]]
-   (ajax/ajax-request
-    {:uri (str "/admin/api/" (name page-name))
-     :method :get
-     :handler (fn [[ok? items]] (r/dispatch [:save-items items]))
-     :format (ajax/transit-request-format)
-     :response-format (ajax/transit-response-format)})
-   nil))
+(defn fetch-items [page-name]
+  (r/dispatch [:fetch (str "/" page-name) :save-items]))
 
 (r/register-handler
  :save-items
