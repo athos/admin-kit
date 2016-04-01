@@ -1,6 +1,5 @@
 (ns lustered.handler
   (:require [mount.core :refer [defstate]]
-            [net.cgrand.enlive-html :as enlive]
             [ring.util.response :as res]
             [compojure
              [core :refer :all]
@@ -11,11 +10,8 @@
             [clojure.java.io :as io]
             [clojure.walk :as walk]))
 
-(defstate page-template
-  :start (enlive/template (io/resource "public/index.html") []))
-
 (defn render-root-page []
-  (-> (res/response (apply str (page-template)))
+  (-> (res/response (io/file (io/resource "public/index.html")))
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
