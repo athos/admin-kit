@@ -30,24 +30,56 @@
  :save-spec
  [r/trim-v (r/path :spec)]
  (fn [_ [spec]]
+   (r/dispatch [:fetch-items (:name spec)])
    spec))
+
+(r/register-handler
+ :fetch-items
+ [r/trim-v (r/path :items)]
+ (fn [_ [page-name]]
+   (ajax/ajax-request
+    {:uri (str "/admin/api/" (name page-name))
+     :method :get
+     :handler (fn [[ok? items]] (r/dispatch [:save-items items]))
+     :format (ajax/transit-request-format)
+     :response-format (ajax/transit-response-format)})
+   nil))
+
+(r/register-handler
+ :save-items
+ [r/trim-v (r/path :items)]
+ (fn [_ [items]]
+   items))
 
 (r/register-sub
  :spec
  (fn [db _]
    (reaction (:spec @db))))
 
+(r/register-sub
+ :items
+ (fn [db _]
+   (reaction (:items @db))))
+
 (defn app []
-  (let [spec (r/subscribe [:spec])]
+  (let [spec (r/subscribe [:spec])
+        items (r/subscribe [:items])]
     (fn []
       (when @spec
-        `[:div
-          [:h1 ~(:title @spec)]
-          [:table
-           [:thead
-            [:tr
-             ~@(for [{:keys [title]} (:fields @spec)]
-                 [:th title])]]]]))))
+        (let [fields (:fields @spec)]
+          `[:div
+            [:h1 ~(:title @spec)]
+            [:table
+             [:thead
+              [:tr
+               ~@(for [{:keys [title]} fields]
+                   [:th title])]]
+             ~(when @items
+                `[:tbody
+                  ~@(for [item @items]
+                      `[:tr
+                        ~@(for [{:keys [field]} fields]
+                            [:td (get item field)])])])]])))))
 
 (defn ^:export main []
   (r/dispatch [:init])
