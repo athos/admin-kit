@@ -57,7 +57,8 @@
   :profiles {:dev {:source-paths ["env" "examples"]
                    :dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [environ "1.0.2"]
-                                  [ring/ring-jetty-adapter "1.4.0"]]}}
+                                  [ring/ring-jetty-adapter "1.4.0"]
+                                  [clj-time "0.11.0"]]}}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
              ;; :server-port 3449 ;; default

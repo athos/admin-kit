@@ -3,6 +3,9 @@
             [environ.core :refer [env]]
             [ring.util.response :refer [response]]
             [ring.adapter.jetty :refer [run-jetty]]
+            [clj-time
+             [coerce :as coerce]
+             [format :as format]]
             [lustered.handler :as lustered]))
 
 (def sample-products
@@ -12,6 +15,9 @@
           {:id 2, :name "鉛筆", :furigana "エンピツ", :price 120}
           {:id 3, :name "消しゴム", :furigana "ケシゴム", :price 80}]
          (map (partial merge base)))))
+
+(defn date-formatter [date]
+  (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
 (def admin-page-spec
   {:name :products
@@ -29,9 +35,11 @@
              :title "値段"
              :type :text}
             {:field :created-at
-             :title "登録日"}
+             :title "登録日"
+             :format date-formatter}
             {:field :modified-at
-             :title "最終更新日"}]
+             :title "最終更新日"
+             :format date-formatter}]
    :on-read (fn [& args] sample-products)})
 
 (def app (lustered/make-admin-page-handler "/admin" admin-page-spec))
