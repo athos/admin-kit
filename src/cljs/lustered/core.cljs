@@ -2,52 +2,49 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [clojure.string :as str]))
 
 (enable-console-print!)
 
 (println "Edits to this text should show up in your developer console.")
 
-(declare fetch-spec)
-
-(r/register-handler
- :init
- (fn [_ _]
-   (fetch-spec "products")
-   {}))
 
 (r/register-handler
  :fetch
  [r/trim-v]
- (fn [db [path cont & args]]
+ (fn [db [page-name paths callback]]
    (ajax/ajax-request
-    {:uri (str "/admin/api" path)
+    {:uri (cond-> (str "/admin/api/" page-name)
+            (not (empty? paths)) (str "/" (str/join "/" paths)))
      :method :get
-     :handler (fn [[ok? data]] (r/dispatch `[~cont ~data ~@args]))
+     :handler (fn [[ok? data]] (callback data))
      :format (ajax/transit-request-format)
      :response-format (ajax/transit-response-format)})
    db))
 
-(defn fetch-spec [page-name]
-  (r/dispatch [:fetch (str "/" page-name "/_spec") :save-spec]))
-
-(declare fetch-items)
+(defn fetch [page-name paths callback]
+  (r/dispatch [:fetch page-name paths callback]))
 
 (r/register-handler
- :save-spec
- [r/trim-v (r/path :spec)]
- (fn [_ [spec]]
-   (fetch-items (name (:name spec)))
-   spec))
+ :save
+ [r/trim-v]
+ (fn [db [key val]]
+   (assoc db key val)))
 
-(defn fetch-items [page-name]
-  (r/dispatch [:fetch (str "/" page-name) :save-items]))
+(defn save [key val]
+  (r/dispatch [:save key val]))
+
 
 (r/register-handler
- :save-items
- [r/trim-v (r/path :items)]
- (fn [_ [items]]
-   items))
+ :init
+ [r/trim-v]
+ (fn [_ [page-name]]
+   (fetch page-name ["_spec"]
+          (fn [spec]
+            (save :spec spec)
+            (fetch page-name [] #(save :items %))))
+   {}))
 
 (r/register-sub
  :spec
@@ -112,7 +109,7 @@
          [edit-modal]]))))
 
 (defn ^:export main []
-  (r/dispatch [:init])
+  (r/dispatch [:init "products"])
   (reagent/render [app] (.getElementById js/document "app")))
 
 (.addEventListener js/window "load" main)
