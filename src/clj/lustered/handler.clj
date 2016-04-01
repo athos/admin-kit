@@ -10,6 +10,11 @@
             [clojure.java.io :as io]
             [clojure.walk :as walk]))
 
+(defn ->str [x]
+  (if (keyword? x)
+    (name x)
+    (str x)))
+
 (defn render-root-page []
   (-> (res/response (io/file (io/resource "public/index.html")))
       (res/content-type "text/html")
@@ -44,12 +49,17 @@
 
 (defn format-item-fields [spec item]
   (let [formatters (field-formatters spec)]
-    (reduce (fn [item field-name]
-              (let [formatter (or (get formatters field-name)
-                                  default-formatter)]
-                (update item field-name formatter)))
-            item
-            (keys item))))
+    (reduce-kv (fn [item field-name field-value]
+                 (let [formatter (or (get formatters field-name)
+                                     default-formatter)
+                       formatted (formatter field-value)]
+                   (if (not= field-value formatted)
+                     (assoc item
+                            (keyword "_formatted" (->str field-name))
+                            formatted)
+                     item)))
+               item
+               item)))
 
 (defn make-api-routes [page-name spec]
   (let [{:keys [on-create on-read on-update on-delete]} spec]

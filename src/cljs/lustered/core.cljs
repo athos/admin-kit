@@ -78,6 +78,11 @@
     "編集"]
    [:button.btn.btn-danger {:type "button"} "削除"]])
 
+(defn formatted-value [item field-name]
+  (let [field-name' (keyword "_formatted" (name field-name))]
+    (or (get item field-name')
+        (get item field-name))))
+
 (defn items-table [spec items]
   (let [fields (:fields spec)]
     `[:table.table.table-striped
@@ -91,7 +96,7 @@
            ~@(for [item items]
                `[:tr
                  ~@(for [{:keys [field]} fields]
-                     [:td (get item field)])
+                     [:td (formatted-value item field)])
                  ~[edit-buttons]])])]))
 
 (defn edit-modal []
