@@ -40,6 +40,11 @@
     (filter #(= (:id %) id) (vals @sample-products))
     (sort-by :id (vals @sample-products))))
 
+(defn update! [{:keys [id] :as product}]
+  (let [new-item (assoc product :modified-at (Date.))]
+    (swap! sample-products assoc id new-item)
+    new-item))
+
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
@@ -65,7 +70,8 @@
              :title "最終更新日"
              :format date-formatter}]
    :on-create create!
-   :on-read find})
+   :on-read find
+   :on-update update!})
 
 (def app (lustered/make-admin-page-handler "/admin" admin-page-spec))
 
