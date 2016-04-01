@@ -11,19 +11,26 @@
 (r/register-handler
  :init
  (fn [_ _]
+   (r/dispatch [:fetch-spec])
+   {}))
+
+(r/register-handler
+ :fetch-spec
+ [(r/path :spec)]
+ (fn [_ _]
    (ajax/ajax-request
     {:uri "/admin/api/products/_spec"
      :method :get
      :handler (fn [[ok? spec]] (r/dispatch [:save-spec spec]))
      :format (ajax/transit-request-format)
      :response-format (ajax/transit-response-format)})
-   {}))
+   nil))
 
 (r/register-handler
  :save-spec
- [r/trim-v]
- (fn [db [spec]]
-   (assoc db :spec spec)))
+ [r/trim-v (r/path :spec)]
+ (fn [_ [spec]]
+   spec))
 
 (r/register-sub
  :spec
