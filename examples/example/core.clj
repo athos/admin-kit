@@ -45,6 +45,10 @@
     (swap! sample-products assoc id new-item)
     new-item))
 
+(defn delete! [{:keys [id]}]
+  (swap! sample-products dissoc id)
+  id)
+
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
@@ -71,7 +75,8 @@
              :format date-formatter}]
    :on-create create!
    :on-read find
-   :on-update update!})
+   :on-update update!
+   :on-delete delete!})
 
 (def app (lustered/make-admin-page-handler "/admin" admin-page-spec))
 
