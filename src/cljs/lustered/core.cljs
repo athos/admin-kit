@@ -83,17 +83,33 @@
                      [:td (get item field)])
                  ~[edit-buttons]])])]))
 
+(defn edit-modal []
+  [:div#my-modal.modal.fade {:role "dialog"}
+   [:div.modal-dialog
+    [:div.modal-content
+     [:div.modal-header
+      [:button.close {:type "button" :data-dismiss "modal" :aria-label "Close"}
+       "&times;"]
+      [:h4.modal-title "Modal title"]]
+     [:div.modal-body "One fine body"]
+     [:div.modal-footer
+      [:button.btn.btn-default {:type "button" :data-dismiss "modal"}
+       "Close"]
+      [:button.btn.btn-primary {:type "button"} "Save changes"]]]]])
+
 (defn app []
   (let [spec (r/subscribe [:spec])
         items (r/subscribe [:items])]
     (fn []
       (when @spec
-        [:div.row
-         [:div.col-md-1]
-         [:div.col-md-10
-          [:h1 (:title @spec)]
-          [items-table @spec @items]]
-         [:div.col-md-1]]))))
+        [:div
+         [:div.row
+          [:div.col-md-1]
+          [:div.col-md-10
+           [:h1 (:title @spec)]
+           [items-table @spec @items]]
+          [:div.col-md-1]]
+         [edit-modal]]))))
 
 (defn ^:export main []
   (r/dispatch [:init])
