@@ -59,19 +59,29 @@
  (fn [db _]
    (reaction (:items @db))))
 
+(defn edit-buttons []
+  [:td
+   [:button.btn.btn-success {:type "button"
+                             :data-toggle "modal"
+                             :data-target "#my-modal"}
+    "編集"]
+   [:button.btn.btn-danger {:type "button"} "削除"]])
+
 (defn items-table [spec items]
   (let [fields (:fields spec)]
     `[:table.table.table-striped
       [:thead
        [:tr
         ~@(for [{:keys [title]} fields]
-            [:th title])]]
+            [:th title])
+        [:th "アクション"]]]
       ~(when items
          `[:tbody
            ~@(for [item items]
                `[:tr
                  ~@(for [{:keys [field]} fields]
-                     [:td (get item field)])])])]))
+                     [:td (get item field)])
+                 ~[edit-buttons]])])]))
 
 (defn app []
   (let [spec (r/subscribe [:spec])
