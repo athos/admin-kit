@@ -126,9 +126,14 @@
 (defn edit-buttons [index item]
   (letfn [(on-edit [] (open-modal index item))]
     [:td
-     [:button.btn.btn-success {:type "button" :on-click on-edit}
-      "編集"]
-     [:button.btn.btn-danger {:type "button"} "削除"]]))
+     [:a {:href "#" :on-click on-edit}
+      [:span.fa-stack.fa-lg
+       [:i.fa.fa-circle.fa-stack-2x.text-primary]
+       [:i.fa.fa-pencil.fa-stack-1x.fa-inverse]]]
+     [:a {:href "#"}
+      [:span.fa-stack.fa-lg
+       [:i.fa.fa-circle.fa-stack-2x.text-danger]
+       [:i.fa.fa-trash.fa-stack-1x.fa-inverse]]]]))
 
 (defn formatted-field? [field-name]
   (= (namespace field-name) "_formatted"))
@@ -148,7 +153,7 @@
           [:tr
            (for [{:keys [field label]} fields]
              ^{:key field} [:th label])
-           [:th "アクション"]]]
+           [:th]]]
          (when @items
            [:tbody
             (for [[index item] (map-indexed vector @items)]
