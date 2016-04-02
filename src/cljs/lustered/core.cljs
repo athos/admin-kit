@@ -54,6 +54,18 @@
               (request page-name [] #(save :items (vec %)))))
    {:page-name page-name :modal-shown? false}))
 
+(r/register-handler
+ :edit-item-field
+ [r/trim-v (r/path :editing-item)]
+ (fn [editing-item [field value]]
+   (assoc-in editing-item [:item field] value)))
+
+(r/register-handler
+ :update-item
+ [r/trim-v (r/path :items)]
+ (fn [items [index item]]
+   (assoc items index item)))
+
 ;;
 ;; Subscriptions
 ;;
@@ -127,31 +139,42 @@
 (def Input
   (reagent/adapt-react-class (.. js/ReactBootstrap -Input)))
 
-(defmulti render-field (fn [field value formatted] (:type field)))
-(defmethod render-field :default [field value formatted]
+(defmulti render-field (fn [field value formatted updater] (:type field)))
+(defmethod render-field :default [field value formatted _]
   [FormControlsStatic
    {:label (:label field)
     :label-class-name "col-xs-3"
     :wrapper-class-name "col-xs-9"
     :value formatted}])
 
-(defmethod render-field :text [field value _]
+(defmethod render-field :text [field value _ updater]
   (let [{field-name :field field-label :label} field]
     [Input {:type :text
             :label field-label
             :label-class-name "col-xs-3"
             :wrapper-class-name "col-xs-9"
             :placeholder field-label
-            :value value}]))
+            :default-value value
+            :on-blur (fn [e] (updater (.. e -target -value)))}]))
 
 (defn modal-form [fields item]
   [:form.form-horizontal
    (for [{field-name :field :as field} fields]
-     (with-meta
-       (render-field field
-                     (get item field-name)
-                     (formatted-value item field-name))
-       {:key (name field-name)}))])
+     (letfn [(updater [val]
+               (r/dispatch [:edit-item-field field-name val]))]
+       (with-meta
+         (render-field field
+                       (get item field-name)
+                       (formatted-value item field-name)
+                       updater)
+         {:key (name field-name)})))])
+
+(defn modal-submit-button [editing-item]
+  (letfn [(on-submit [_]
+            (let [{:keys [index item]} @editing-item]
+              (r/dispatch [:update-item index item'])))]
+    [:button.btn.btn-primary {:type "button" :on-click on-submit}
+     "Save changes"]))
 
 (def Modal
   (reagent/adapt-react-class (.. js/ReactBootstrap -Modal)))
@@ -177,7 +200,7 @@
        [ModalFooter
         [:button.btn.btn-default {:type "button" :on-click close-modal}
          "Close"]
-        [:button.btn.btn-primary {:type "button"} "Save changes"]]])))
+        [modal-submit-button editing-item]]])))
 
 (defn app []
   (let [spec (r/subscribe [:spec])
