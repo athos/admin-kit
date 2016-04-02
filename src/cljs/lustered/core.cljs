@@ -103,19 +103,19 @@
 
 (defn items-table [spec items]
   (let [fields (:fields spec)]
-    `[:table.table.table-striped
-      [:thead
-       [:tr
-        ~@(for [{:keys [label]} fields]
-            [:th label])
-        [:th "アクション"]]]
-      ~(when items
-         `[:tbody
-           ~@(for [[index item] (map-indexed vector items)]
-               `[:tr
-                 ~@(for [{:keys [field]} fields]
-                     [:td (formatted-value item field)])
-                 ~[edit-buttons index item]])])]))
+    [:table.table.table-striped
+     [:thead
+      [:tr
+       (for [{:keys [field label]} fields]
+         ^{:key field} [:th label])
+       [:th "アクション"]]]
+     (when items
+       [:tbody
+        (for [[index item] (map-indexed vector items)]
+          ^{:key index} [:tr
+                         (for [{:keys [field]} fields]
+                           ^{:key field} [:td (formatted-value item field)])
+                         [edit-buttons index item]])])]))
 
 (def FormControlsStatic
   (reagent/adapt-react-class (.. js/ReactBootstrap -FormControls -Static)))
