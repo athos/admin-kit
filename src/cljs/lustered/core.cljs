@@ -11,7 +11,7 @@
 (println "Edits to this text should show up in your developer console.")
 
 ;;
-;; General handlers
+;; Handlers
 ;;
 
 (r/register-handler
@@ -39,10 +39,6 @@
 (defn save [key val]
   (r/dispatch [:save key val]))
 
-;;
-;; Initialization
-;;
-
 (r/register-handler
  :init
  [r/trim-v]
@@ -68,6 +64,11 @@
    (reaction (:items @db))))
 
 (r/register-sub
+ :editing-item
+ (fn [db _]
+   (reaction (:editing-item @db))))
+
+(r/register-sub
  :modal-shown?
  (fn [db _]
    (reaction (:modal-shown? @db))))
@@ -76,21 +77,24 @@
 ;; Utilities
 ;;
 
-(defn open-modal []
+(defn open-modal [index item]
+  (save :editing-item {:index index :item item})
   (save :modal-shown? true))
 
 (defn close-modal []
+  (save :editing-item nil)
   (save :modal-shown? false))
 
 ;;
 ;; Components
 ;;
 
-(defn edit-buttons []
-  [:td
-   [:button.btn.btn-success {:type "button" :on-click open-modal}
-    "編集"]
-   [:button.btn.btn-danger {:type "button"} "削除"]])
+(defn edit-buttons [index item]
+  (letfn [(on-edit [] (open-modal index item))]
+    [:td
+     [:button.btn.btn-success {:type "button" :on-click on-edit}
+      "編集"]
+     [:button.btn.btn-danger {:type "button"} "削除"]]))
 
 (defn formatted-value [item field-name]
   (let [field-name' (keyword "_formatted" (name field-name))]
@@ -107,11 +111,42 @@
         [:th "アクション"]]]
       ~(when items
          `[:tbody
-           ~@(for [item items]
+           ~@(for [[index item] (map-indexed vector items)]
                `[:tr
                  ~@(for [{:keys [field]} fields]
                      [:td (formatted-value item field)])
-                 ~[edit-buttons]])])]))
+                 ~[edit-buttons index item]])])]))
+
+(def FormControlsStatic
+  (reagent/adapt-react-class (.. js/ReactBootstrap -FormControls -Static)))
+(def Input
+  (reagent/adapt-react-class (.. js/ReactBootstrap -Input)))
+
+(defmulti render-field (fn [field value formatted] (:type field)))
+(defmethod render-field :default [field value formatted]
+  [FormControlsStatic
+   {:label (:title field)
+    :label-class-name "col-xs-3"
+    :wrapper-class-name "col-xs-9"
+    :value formatted}])
+
+(defmethod render-field :text [field value _]
+  (let [{field-name :field field-title :title} field]
+    [Input {:type :text
+            :label field-title
+            :label-class-name "col-xs-3"
+            :wrapper-class-name "col-xs-9"
+            :placeholder field-title
+            :value value}]))
+
+(defn modal-form [fields item]
+  [:form.form-horizontal
+   (for [{field-name :field :as field} fields]
+     (with-meta
+       (render-field field
+                     (get item field-name)
+                     (formatted-value item field-name))
+       {:key (name field-name)}))])
 
 (def Modal
   (reagent/adapt-react-class (.. js/ReactBootstrap -Modal)))
@@ -125,12 +160,15 @@
   (reagent/adapt-react-class (.. js/ReactBootstrap -ModalFooter)))
 
 (defn edit-modal []
-  (let [modal-shown? (r/subscribe [:modal-shown?])]
+  (let [spec (r/subscribe [:spec])
+        modal-shown? (r/subscribe [:modal-shown?])
+        editing-item (r/subscribe [:editing-item])]
     (fn []
       [Modal {:show @modal-shown? :on-hide close-modal}
        [ModalHeader {:close-button true}
-        [ModalTitle "Modal title"]]
-       [ModalBody "One fine body"]
+        [ModalTitle (:title @spec)]]
+       (when-let [{:keys [item]} @editing-item]
+         [ModalBody (modal-form (:fields @spec) item)])
        [ModalFooter
         [:button.btn.btn-default {:type "button" :on-click close-modal}
          "Close"]
