@@ -180,7 +180,7 @@
             :wrapper-class-name "col-xs-9"
             :placeholder field-label
             :default-value value
-            :on-blur (fn [e] (updater (.. e -target -value)))}]))
+            :on-change (fn [e] (updater (.. e -target -value)))}]))
 
 (defn modal-form [fields item]
   [:form.form-horizontal
