@@ -139,21 +139,25 @@
     (or (get item field-name')
         (get item field-name))))
 
-(defn items-table [spec items]
-  (let [fields (:fields @spec)]
-    [:table.table.table-striped
-     [:thead
-      [:tr
-       (for [{:keys [field label]} fields]
-         ^{:key field} [:th label])
-       [:th "アクション"]]]
-     (when @items
-       [:tbody
-        (for [[index item] (map-indexed vector @items)]
-          ^{:key index} [:tr
-                         (for [{:keys [field]} fields]
-                           ^{:key field} [:td (formatted-value item field)])
-                         [edit-buttons index item]])])]))
+(defn items-table []
+  (let [spec (r/subscribe [:spec])
+        items (r/subscribe [:items])]
+    (fn []
+      (let [fields (:fields @spec)]
+        [:table.table.table-striped
+         [:thead
+          [:tr
+           (for [{:keys [field label]} fields]
+             ^{:key field} [:th label])
+           [:th "アクション"]]]
+         (when @items
+           [:tbody
+            (for [[index item] (map-indexed vector @items)]
+              ^{:key index}
+              [:tr
+               (for [{:keys [field]} fields]
+                 ^{:key field} [:td (formatted-value item field)])
+               (edit-buttons index item)])])]))))
 
 (def FormControlsStatic
   (reagent/adapt-react-class (.. js/ReactBootstrap -FormControls -Static)))
@@ -227,8 +231,7 @@
         [modal-submit-button editing-item]]])))
 
 (defn app []
-  (let [spec (r/subscribe [:spec])
-        items (r/subscribe [:items])]
+  (let [spec (r/subscribe [:spec])]
     (fn []
       (when @spec
         [:div
@@ -236,7 +239,7 @@
           [:div.col-md-1]
           [:div.col-md-10
            [:h1 (:title @spec)]
-           [items-table spec items]]
+           [items-table]]
           [:div.col-md-1]]
          [edit-modal]]))))
 
