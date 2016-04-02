@@ -56,22 +56,22 @@
   {:name :products
    :title "商品"
    :fields [{:field :id
-             :title "ID"
+             :label "ID"
              :format #(format "%03d" %)}
             {:field :name
-             :title "名前"
+             :label "名前"
              :type :text}
             {:field :furigana
-             :title "フリガナ"
+             :label "フリガナ"
              :type :text}
             {:field :price
-             :title "値段"
+             :label "値段"
              :type :text}
             {:field :created-at
-             :title "登録日"
+             :label "登録日"
              :format date-formatter}
             {:field :modified-at
-             :title "最終更新日"
+             :label "最終更新日"
              :format date-formatter}]
    :on-create create!
    :on-read find

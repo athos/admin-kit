@@ -106,8 +106,8 @@
     `[:table.table.table-striped
       [:thead
        [:tr
-        ~@(for [{:keys [title]} fields]
-            [:th title])
+        ~@(for [{:keys [label]} fields]
+            [:th label])
         [:th "アクション"]]]
       ~(when items
          `[:tbody
@@ -125,18 +125,18 @@
 (defmulti render-field (fn [field value formatted] (:type field)))
 (defmethod render-field :default [field value formatted]
   [FormControlsStatic
-   {:label (:title field)
+   {:label (:label field)
     :label-class-name "col-xs-3"
     :wrapper-class-name "col-xs-9"
     :value formatted}])
 
 (defmethod render-field :text [field value _]
-  (let [{field-name :field field-title :title} field]
+  (let [{field-name :field field-label :label} field]
     [Input {:type :text
-            :label field-title
+            :label field-label
             :label-class-name "col-xs-3"
             :wrapper-class-name "col-xs-9"
-            :placeholder field-title
+            :placeholder field-label
             :value value}]))
 
 (defn modal-form [fields item]
