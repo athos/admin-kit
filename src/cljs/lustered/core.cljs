@@ -15,20 +15,25 @@
 ;;
 
 (r/register-handler
- :fetch
+ :request
  [r/trim-v]
- (fn [db [page-name paths callback]]
+ (fn [db [page-name paths {:keys [method data]} callback]]
    (ajax/ajax-request
-    {:uri (cond-> (str "/admin/api/" page-name)
-            (not (empty? paths)) (str "/" (str/join "/" paths)))
-     :method :get
-     :handler (fn [[ok? data]] (callback data))
-     :format (ajax/transit-request-format)
-     :response-format (ajax/transit-response-format)})
+    (cond-> {:uri (str "/admin/api/" page-name
+                       (if (empty? paths) "" (str "/" (str/join "/" paths))))
+             :method method
+             :handler (fn [[ok? data]] (if ok? (callback data))) ;; FIXME: should handle errors in a more proper way
+             :format (ajax/transit-request-format)
+             :response-format (ajax/transit-response-format)}
+      data (assoc :params data)))
    db))
 
-(defn fetch [page-name paths callback]
-  (r/dispatch [:fetch page-name paths callback]))
+(defn request
+  ([page-name paths callback]
+   (request page-name paths {:method :get} callback))
+  ([page-name paths opts callback]
+   (prn page-name paths opts)
+   (r/dispatch [:request page-name paths opts callback])))
 
 (r/register-handler
  :save
@@ -43,11 +48,11 @@
  :init
  [r/trim-v]
  (fn [_ [page-name]]
-   (fetch page-name ["_spec"]
-          (fn [spec]
-            (save :spec spec)
-            (fetch page-name [] #(save :items %))))
-   {:modal-shown? false}))
+   (request page-name ["_spec"]
+            (fn [spec]
+              (save :spec spec)
+              (request page-name [] #(save :items (vec %)))))
+   {:page-name page-name :modal-shown? false}))
 
 ;;
 ;; Subscriptions
