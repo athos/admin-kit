@@ -2,6 +2,7 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
+            [cljsjs.react-bootstrap]
             [ajax.core :as ajax]
             [clojure.string :as str]))
 
@@ -50,7 +51,7 @@
           (fn [spec]
             (save :spec spec)
             (fetch page-name [] #(save :items %))))
-   {}))
+   {:modal-shown? false}))
 
 ;;
 ;; Subscriptions
@@ -66,15 +67,28 @@
  (fn [db _]
    (reaction (:items @db))))
 
+(r/register-sub
+ :modal-shown?
+ (fn [db _]
+   (reaction (:modal-shown? @db))))
+
+;;
+;; Utilities
+;;
+
+(defn open-modal []
+  (save :modal-shown? true))
+
+(defn close-modal []
+  (save :modal-shown? false))
+
 ;;
 ;; Components
 ;;
 
 (defn edit-buttons []
   [:td
-   [:button.btn.btn-success {:type "button"
-                             :data-toggle "modal"
-                             :data-target "#my-modal"}
+   [:button.btn.btn-success {:type "button" :on-click open-modal}
     "編集"]
    [:button.btn.btn-danger {:type "button"} "削除"]])
 
@@ -99,19 +113,28 @@
                      [:td (formatted-value item field)])
                  ~[edit-buttons]])])]))
 
+(def Modal
+  (reagent/adapt-react-class (.. js/ReactBootstrap -Modal)))
+(def ModalHeader
+  (reagent/adapt-react-class (.. js/ReactBootstrap -ModalHeader)))
+(def ModalTitle
+  (reagent/adapt-react-class (.. js/ReactBootstrap -ModalTitle)))
+(def ModalBody
+  (reagent/adapt-react-class (.. js/ReactBootstrap -ModalBody)))
+(def ModalFooter
+  (reagent/adapt-react-class (.. js/ReactBootstrap -ModalFooter)))
+
 (defn edit-modal []
-  [:div#my-modal.modal.fade {:role "dialog"}
-   [:div.modal-dialog
-    [:div.modal-content
-     [:div.modal-header
-      [:button.close {:type "button" :data-dismiss "modal" :aria-label "Close"}
-       "&times;"]
-      [:h4.modal-title "Modal title"]]
-     [:div.modal-body "One fine body"]
-     [:div.modal-footer
-      [:button.btn.btn-default {:type "button" :data-dismiss "modal"}
-       "Close"]
-      [:button.btn.btn-primary {:type "button"} "Save changes"]]]]])
+  (let [modal-shown? (r/subscribe [:modal-shown?])]
+    (fn []
+      [Modal {:show @modal-shown? :on-hide close-modal}
+       [ModalHeader {:close-button true}
+        [ModalTitle "Modal title"]]
+       [ModalBody "One fine body"]
+       [ModalFooter
+        [:button.btn.btn-default {:type "button" :on-click close-modal}
+         "Close"]
+        [:button.btn.btn-primary {:type "button"} "Save changes"]]])))
 
 (defn app []
   (let [spec (r/subscribe [:spec])

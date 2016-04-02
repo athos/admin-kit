@@ -21,9 +21,11 @@
                  [org.clojure/clojurescript "1.8.40"]
                  [cljs-ajax "0.5.4"]
                  [bidi "2.0.4"]
-                 [reagent "0.5.1"]
+                 [reagent "0.5.1" :exclusions [cljsjs/react]]
                  [re-frame "0.7.0"]
-                 ]
+                 [cljsjs/jquery "2.2.2-0"]
+                 [cljsjs/react-bootstrap "0.28.1-1"
+                  :exclusions [org.webjars.bower/jquery]]]
 
   :plugins [[lein-figwheel "0.5.2"]
             [lein-cljsbuild "1.1.3" :exclusions [[org.clojure/clojure]]]]
