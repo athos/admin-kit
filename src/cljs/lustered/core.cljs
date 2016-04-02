@@ -32,7 +32,6 @@
   ([page-name paths callback]
    (request page-name paths {:method :get} callback))
   ([page-name paths opts callback]
-   (prn page-name paths opts)
    (r/dispatch [:request page-name paths opts callback])))
 
 (r/register-handler
