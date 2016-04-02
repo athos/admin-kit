@@ -40,10 +40,14 @@
     (filter #(= (:id %) id) (vals @sample-products))
     (sort-by :id (vals @sample-products))))
 
-(defn update! [{:keys [id] :as product}]
-  (let [new-item (assoc product :modified-at (Date.))]
-    (swap! sample-products assoc id new-item)
-    new-item))
+(defn update! [{:keys [id price] :as product}]
+  (let [id (Long/parseLong id)
+        price (Long/parseLong price)
+        new-fields (-> product
+                       (select-keys [:name :furigana])
+                       (assoc :price price :modified-at (Date.)))]
+    (-> (swap! sample-products update id merge new-fields)
+        (get id))))
 
 (defn delete! [{:keys [id]}]
   (swap! sample-products dissoc id)

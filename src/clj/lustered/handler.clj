@@ -71,7 +71,9 @@
          (POST page-name {:keys [params]}
            (res/response (on-create params)))
          (PUT (str page-name "/:id") {:keys [params]}
-           (res/response (on-update params)))
+           (->> (on-update params)
+                (format-item-fields spec)
+                res/response))
          (DELETE (str page-name "/:id") {:keys [params]}
            (res/response (on-delete params)))
          (GET (str page-name "/_spec") []

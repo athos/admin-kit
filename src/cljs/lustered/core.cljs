@@ -60,6 +60,24 @@
  (fn [editing-item [field value]]
    (assoc-in editing-item [:item field] value)))
 
+(declare formatted-field?)
+
+(defn preprocess-item-fields [item]
+  (reduce-kv (fn [m k v]
+               (if (formatted-field? k)
+                 m
+                 (assoc m k (str v))))
+             {}
+             item))
+
+(r/register-handler
+ :request-update-item
+ [r/trim-v]
+ (fn [{:keys [page-name] :as db} [index item callback]]
+   (let [item' (preprocess-item-fields item)]
+     (request page-name [(:id item)] {:method :put :data item'} callback))
+   db))
+
 (r/register-handler
  :update-item
  [r/trim-v (r/path :items)]
@@ -112,6 +130,9 @@
      [:button.btn.btn-success {:type "button" :on-click on-edit}
       "編集"]
      [:button.btn.btn-danger {:type "button"} "削除"]]))
+
+(defn formatted-field? [field-name]
+  (= (namespace field-name) "_formatted"))
 
 (defn formatted-value [item field-name]
   (let [field-name' (keyword "_formatted" (name field-name))]
@@ -172,7 +193,10 @@
 (defn modal-submit-button [editing-item]
   (letfn [(on-submit [_]
             (let [{:keys [index item]} @editing-item]
-              (r/dispatch [:update-item index item'])))]
+              (r/dispatch [:request-update-item index item
+                           (fn [item']
+                             (close-modal)
+                             (r/dispatch [:update-item index item']))])))]
     [:button.btn.btn-primary {:type "button" :on-click on-submit}
      "Save changes"]))
 
