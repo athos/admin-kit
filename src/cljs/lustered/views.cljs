@@ -61,6 +61,10 @@
                  ^{:key field} [:td (formatted-value item field)])
                (edit-buttons index item)])])]))))
 
+(defn add-new-button []
+  [:button.btn.btn-success {:type :button :on-click #(open-modal nil {})}
+   [:i.fa.fa-plus-square-o] " Add new"])
+
 (def FormControlsStatic
   (reagent/adapt-react-class (.. js/ReactBootstrap -FormControls -Static)))
 (def Input
@@ -99,9 +103,11 @@
 (defn modal-submit-button [editing-item]
   (letfn [(on-submit [_]
             (let [{:keys [index item]} @editing-item]
-              (r/dispatch [:request-update-item index item #(close-modal)])))]
+              (if index
+                (r/dispatch [:request-update-item index item #(close-modal)])
+                (r/dispatch [:request-create-item item #(close-modal)]))))]
     [:button.btn.btn-primary {:type "button" :on-click on-submit}
-     "Save changes"]))
+     "Save"]))
 
 (def Modal
   (reagent/adapt-react-class (.. js/ReactBootstrap -Modal)))
@@ -138,6 +144,7 @@
           [:div.col-md-1]
           [:div.col-md-10
            [:h1 (:title @spec)]
-           [items-table]]
+           [items-table]
+           [add-new-button]]
           [:div.col-md-1]]
          [edit-modal]]))))

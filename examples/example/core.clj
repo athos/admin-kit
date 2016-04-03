@@ -32,8 +32,9 @@
            (add! {:name "鉛筆", :furigana "エンピツ", :price 120})
            (add! { :name "消しゴム", :furigana "ケシゴム", :price 80})))
 
-(defn create! [product]
-  (add! sample-products product))
+(defn create! [{:keys [price] :as product}]
+  (let [price (Long/parseLong price)]
+    (add! sample-products (assoc product :price price))))
 
 (defn find [{:keys [id]}]
   (if id

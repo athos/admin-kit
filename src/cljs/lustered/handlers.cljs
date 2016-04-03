@@ -70,6 +70,15 @@
              item))
 
 (r/register-handler
+ :request-create-item
+ [r/trim-v]
+ (fn [{:keys [page-name] :as db} [item callback]]
+   (let [item' (preprocess-item-fields item)]
+     ;; FIXME: callback invocation should wait for completing fetching items
+     (request page-name [] {:method :post :data item'}
+              (fn [_] (fetch-items page-name) (callback))))))
+
+(r/register-handler
  :request-update-item
  [r/trim-v]
  (fn [{:keys [page-name] :as db} [index item callback]]
