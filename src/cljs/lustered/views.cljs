@@ -1,123 +1,21 @@
-(ns lustered.core
-  (:require-macros [reagent.ratom :refer [reaction]])
+(ns lustered.views
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
-            [ajax.core :as ajax]
-            [clojure.string :as str]))
-
-(enable-console-print!)
-
-(println "Edits to this text should show up in your developer console.")
-
-;;
-;; Handlers
-;;
-
-(r/register-handler
- :request
- [r/trim-v]
- (fn [db [page-name paths {:keys [method data]} callback]]
-   (ajax/ajax-request
-    (cond-> {:uri (str "/admin/api/" page-name
-                       (if (empty? paths) "" (str "/" (str/join "/" paths))))
-             :method method
-             :handler (fn [[ok? data]] (if ok? (callback data))) ;; FIXME: should handle errors in a more proper way
-             :format (ajax/transit-request-format)
-             :response-format (ajax/transit-response-format)}
-      data (assoc :params data)))
-   db))
-
-(defn request
-  ([page-name paths callback]
-   (request page-name paths {:method :get} callback))
-  ([page-name paths opts callback]
-   (r/dispatch [:request page-name paths opts callback])))
-
-(r/register-handler
- :save
- [r/trim-v]
- (fn [db [key val]]
-   (assoc db key val)))
-
-(defn save [key val]
-  (r/dispatch [:save key val]))
-
-(r/register-handler
- :init
- [r/trim-v]
- (fn [_ [page-name]]
-   (request page-name ["_spec"]
-            (fn [spec]
-              (save :spec spec)
-              (request page-name [] #(save :items (vec %)))))
-   {:page-name page-name :modal-shown? false}))
-
-(r/register-handler
- :edit-item-field
- [r/trim-v (r/path :editing-item)]
- (fn [editing-item [field value]]
-   (assoc-in editing-item [:item field] value)))
-
-(declare formatted-field?)
-
-(defn preprocess-item-fields [item]
-  (reduce-kv (fn [m k v]
-               (if (formatted-field? k)
-                 m
-                 (assoc m k (str v))))
-             {}
-             item))
-
-(r/register-handler
- :request-update-item
- [r/trim-v]
- (fn [{:keys [page-name] :as db} [index item callback]]
-   (let [item' (preprocess-item-fields item)]
-     (request page-name [(:id item)] {:method :put :data item'} callback))
-   db))
-
-(r/register-handler
- :update-item
- [r/trim-v (r/path :items)]
- (fn [items [index item]]
-   (assoc items index item)))
-
-;;
-;; Subscriptions
-;;
-
-(r/register-sub
- :spec
- (fn [db _]
-   (reaction (:spec @db))))
-
-(r/register-sub
- :items
- (fn [db _]
-   (reaction (:items @db))))
-
-(r/register-sub
- :editing-item
- (fn [db _]
-   (reaction (:editing-item @db))))
-
-(r/register-sub
- :modal-shown?
- (fn [db _]
-   (reaction (:modal-shown? @db))))
+            [lustered.handlers :as handlers]
+            [lustered.subs]))
 
 ;;
 ;; Utilities
 ;;
 
 (defn open-modal [index item]
-  (save :editing-item {:index index :item item})
-  (save :modal-shown? true))
+  (handlers/save :editing-item {:index index :item item})
+  (handlers/save :modal-shown? true))
 
 (defn close-modal []
-  (save :editing-item nil)
-  (save :modal-shown? false))
+  (handlers/save :editing-item nil)
+  (handlers/save :modal-shown? false))
 
 ;;
 ;; Components
@@ -134,9 +32,6 @@
       [:span.fa-stack.fa-lg
        [:i.fa.fa-circle.fa-stack-2x.text-danger]
        [:i.fa.fa-trash.fa-stack-1x.fa-inverse]]]]))
-
-(defn formatted-field? [field-name]
-  (= (namespace field-name) "_formatted"))
 
 (defn formatted-value [item field-name]
   (let [field-name' (keyword "_formatted" (name field-name))]
@@ -246,15 +141,3 @@
            [items-table]]
           [:div.col-md-1]]
          [edit-modal]]))))
-
-;;
-;; Entry point
-;;
-
-(defn ^:export main []
-  (r/dispatch [:init "products"])
-  (reagent/render [app] (.getElementById js/document "app")))
-
-(.addEventListener js/window "load" main)
-
-(defn on-js-reload [])

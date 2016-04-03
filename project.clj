@@ -41,7 +41,7 @@
                 ;; If no code is to be run, set :figwheel true for continued automagical reloading
                 :figwheel {:on-jsload "lustered.core/on-js-reload"}
 
-                :compiler {:main lustered.core
+                :compiler {:main lustered.main
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/lustered.js"
                            :output-dir "resources/public/js/compiled/out"
@@ -52,7 +52,7 @@
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :compiler {:output-to "resources/public/js/compiled/lustered.js"
-                           :main lustered.core
+                           :main lustered.main
                            :optimizations :advanced
                            :pretty-print false}}]}
 
