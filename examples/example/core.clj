@@ -50,8 +50,9 @@
         (get id))))
 
 (defn delete! [{:keys [id]}]
-  (swap! sample-products dissoc id)
-  id)
+  (let [id (Long/parseLong id)]
+    (swap! sample-products dissoc id)
+    id))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))

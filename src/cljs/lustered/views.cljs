@@ -22,13 +22,16 @@
 ;;
 
 (defn edit-buttons [index item]
-  (letfn [(on-edit [] (open-modal index item))]
+  (letfn [(on-edit [] (open-modal index item))
+          (on-delete []
+            (when (js/confirm "Are you sure you want to delete the item?")
+              (r/dispatch [:request-delete-item item])))]
     [:td
      [:a {:href "#" :on-click on-edit}
       [:span.fa-stack.fa-lg
        [:i.fa.fa-circle.fa-stack-2x.text-primary]
        [:i.fa.fa-pencil.fa-stack-1x.fa-inverse]]]
-     [:a {:href "#"}
+     [:a {:href "#" :on-click on-delete}
       [:span.fa-stack.fa-lg
        [:i.fa.fa-circle.fa-stack-2x.text-danger]
        [:i.fa.fa-trash.fa-stack-1x.fa-inverse]]]]))

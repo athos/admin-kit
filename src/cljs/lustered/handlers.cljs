@@ -82,3 +82,11 @@
  [r/trim-v (r/path :items)]
  (fn [items [index item]]
    (assoc items index item)))
+
+(r/register-handler
+ :request-delete-item
+ [r/trim-v]
+ (fn [{:keys [page-name] :as db} [item]]
+   (request page-name [(:id item)] {:method :delete}
+            (fn [_] (fetch-items page-name)))
+   db))
