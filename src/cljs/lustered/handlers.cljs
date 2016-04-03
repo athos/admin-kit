@@ -33,13 +33,23 @@
   (r/dispatch [:save key val]))
 
 (r/register-handler
+ :fetch-items
+ [r/trim-v]
+ (fn [db [page-name]]
+   (request page-name [] #(save :items (vec %)))
+   db))
+
+(defn fetch-items [page-name]
+  (r/dispatch [:fetch-items page-name]))
+
+(r/register-handler
  :init
  [r/trim-v]
  (fn [_ [page-name]]
    (request page-name ["_spec"]
             (fn [spec]
               (save :spec spec)
-              (request page-name [] #(save :items (vec %)))))
+              (fetch-items page-name)))
    {:page-name page-name :modal-shown? false}))
 
 (r/register-handler
