@@ -99,10 +99,7 @@
 (defn modal-submit-button [editing-item]
   (letfn [(on-submit [_]
             (let [{:keys [index item]} @editing-item]
-              (r/dispatch [:request-update-item index item
-                           (fn [item']
-                             (close-modal)
-                             (r/dispatch [:update-item index item']))])))]
+              (r/dispatch [:request-update-item index item #(close-modal)])))]
     [:button.btn.btn-primary {:type "button" :on-click on-submit}
      "Save changes"]))
 

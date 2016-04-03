@@ -74,14 +74,10 @@
  [r/trim-v]
  (fn [{:keys [page-name] :as db} [index item callback]]
    (let [item' (preprocess-item-fields item)]
-     (request page-name [(:id item)] {:method :put :data item'} callback))
+     ;; FIXME: callback invocation should wait for completing fetching items
+     (request page-name [(:id item)] {:method :put :data item'}
+              (fn [_] (fetch-items page-name) (callback))))
    db))
-
-(r/register-handler
- :update-item
- [r/trim-v (r/path :items)]
- (fn [items [index item]]
-   (assoc items index item)))
 
 (r/register-handler
  :request-delete-item
