@@ -67,31 +67,32 @@
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
-(def admin-page-spec
-  {:title "商品"
-   :fields [{:field :id
-             :label "ID"
-             :format #(format "%03d" %)}
-            {:field :name
-             :label "名前"
-             :type :text}
-            {:field :furigana
-             :label "フリガナ"
-             :type :text}
-            {:field :price
-             :label "値段"
-             :type :text}
-            {:field :created-at
-             :label "登録日"
-             :format date-formatter}
-            {:field :modified-at
-             :label "最終更新日"
-             :format date-formatter}]})
+(def admin-site-spec
+  [[:products
+    {:adapter adapter
+     :spec {:title "商品"
+            :fields [{:field :id
+                      :label "ID"
+                      :format #(format "%03d" %)}
+                     {:field :name
+                      :label "名前"
+                      :type :text}
+                     {:field :furigana
+                      :label "フリガナ"
+                      :type :text}
+                     {:field :price
+                      :label "値段"
+                      :type :text}
+                     {:field :created-at
+                      :label "登録日"
+                      :format date-formatter}
+                     {:field :modified-at
+                      :label "最終更新日"
+                      :format date-formatter}]}}]])
 
 (def app
   (context "/admin" []
-    (lustered/make-admin-site-handler
-      [[:products {:spec admin-page-spec :adapter adapter}]])))
+    (lustered/make-admin-site-handler admin-site-spec)))
 
 (defn start-server []
   (let [port (Long/parseLong (get env :port "8080"))]
