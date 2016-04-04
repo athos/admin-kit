@@ -76,7 +76,8 @@
    (let [item' (preprocess-item-fields item)]
      ;; FIXME: callback invocation should wait for completing fetching items
      (request page-name [] {:method :post :data item'}
-              (fn [_] (fetch-items page-name) (callback))))))
+              (fn [_] (fetch-items page-name) (callback)))
+     db)))
 
 (r/register-handler
  :request-update-item

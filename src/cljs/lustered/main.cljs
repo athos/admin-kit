@@ -13,7 +13,7 @@
 ;;
 
 (defn ^:export main []
-  (let [page-name (re-find #"[^/]+$" (.. js/window location pathname))]
+  (let [page-name (re-find #"[^/]+$" (.. js/window -location -pathname))]
     (r/dispatch [:init page-name]))
   (reagent/render [views/app] (.getElementById js/document "app")))
 
