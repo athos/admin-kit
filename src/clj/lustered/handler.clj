@@ -79,15 +79,10 @@
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
-(defn make-page-routes [page-name site-spec]
-  (routes
-   (GET page-name [] (render-page "page"))
-   (GET (str page-name "/*") [] (render-page "page"))))
-
 (defn make-pages-handler [site-spec]
   (->> (for [[page-name _] site-spec
              :let [page-name (str "/" (name page-name))]]
-         (make-page-routes page-name site-spec))
+         (GET page-name [] (render-page "page")))
        (apply routes)))
 
 (defn make-admin-site-handler [site-spec]
