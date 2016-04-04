@@ -16,28 +16,28 @@
     (name x)
     (str x)))
 
-(defn remove-fns [spec]
+(defn remove-fns [page-spec]
   (walk/prewalk
     (fn [x]
       (if (map? x)
         (reduce-kv #(if (fn? %3) %1 (assoc %1 %2 %3)) {} x)
         x))
-    spec))
+    page-spec))
 
-(defn field-formatters [spec]
+(defn field-formatters [page-spec]
   (reduce (fn [m field]
             (if-let [formatter (:format field)]
               (assoc m (:field field) formatter)
               m))
           {}
-          (:fields spec)))
+          (:fields page-spec)))
 
 (defn default-formatter [x]
   (cond (number? x) x
         :else (str x)))
 
-(defn format-item-fields [spec item]
-  (let [formatters (field-formatters spec)]
+(defn format-item-fields [page-spec item]
+  (let [formatters (field-formatters page-spec)]
     (reduce-kv (fn [item field-name field-value]
                  (let [formatter (or (get formatters field-name)
                                      default-formatter)
