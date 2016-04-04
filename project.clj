@@ -42,7 +42,7 @@
                 :figwheel {:on-jsload "lustered.core/on-js-reload"}
 
                 :compiler {:main lustered.main
-                           :asset-path "js/compiled/out"
+                           :asset-path "../js/compiled/out"
                            :output-to "resources/public/js/compiled/lustered.js"
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true}}

@@ -16,18 +16,6 @@
     (name x)
     (str x)))
 
-(defn render-root-page []
-  (-> (res/response (io/file (io/resource "public/index.html")))
-      (res/content-type "text/html")
-      (res/charset "utf-8")))
-
-(defn make-site-routes [page-name site-spec]
-  (-> (routes
-       (GET page-name [] (render-root-page))
-       (GET (str page-name "/*") [] (render-root-page))
-       (route/resources "public"))
-      (wrap-defaults site-defaults)))
-
 (defn remove-fns [spec]
   (walk/prewalk
     (fn [x]
@@ -62,33 +50,55 @@
                item
                item)))
 
-(defn make-api-routes [page-name spec adapter]
-  (-> (routes
-       (GET page-name {:keys [params]}
-         (->> (adapter/read adapter params)
-              (map #(format-item-fields spec %))
-              res/response))
-       (POST page-name {:keys [params]}
+(defn make-api-routes [page-name page-spec adapter]
+  (routes
+   (GET page-name {:keys [params]}
+        (->> (adapter/read adapter params)
+             (map #(format-item-fields page-spec %))
+             res/response))
+   (POST page-name {:keys [params]}
          (res/response (adapter/create adapter params)))
-       (PUT (str page-name "/:id") {:keys [params]}
-         (->> (adapter/update adapter params)
-              (format-item-fields spec)
-              res/response))
-       (DELETE (str page-name "/:id") {:keys [params]}
-         (res/response (adapter/delete adapter params)))
-       (GET (str page-name "/_spec") []
-         (res/response (remove-fns spec))))
-      (wrap-restful-format :formats [:transit-json])
-      (wrap-defaults api-defaults)))
+   (PUT (str page-name "/:id") {:keys [params]}
+        (->> (adapter/update adapter params)
+             (format-item-fields page-spec)
+             res/response))
+   (DELETE (str page-name "/:id") {:keys [params]}
+           (res/response (adapter/delete adapter params)))
+   (GET (str page-name "/_spec") []
+        (res/response (remove-fns page-spec)))))
 
-(defn- make-admin-page-handler [root-path site-spec page-name page-spec adapter]
-  (let [page-name (str "/" (name page-name))]
-    (context root-path []
-      (context "/_api" []
-        (make-api-routes page-name page-spec adapter))
-      (make-site-routes page-name site-spec))))
-
-(defn make-admin-site-handler [root-path site-spec]
-  (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec]
-         (make-admin-page-handler root-path site-spec page-name page-spec adapter))
+(defn make-apis-handler [site-spec]
+  (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec
+             :let [page-name (str "/" (name page-name))]]
+         (make-api-routes page-name page-spec adapter))
        (apply routes)))
+
+(defn render-page [page]
+  (-> (io/file (io/resource (format "public/html/%s.html" page)))
+      res/response
+      (res/content-type "text/html")
+      (res/charset "utf-8")))
+
+(defn make-page-routes [page-name site-spec]
+  (routes
+   (GET page-name [] (render-page "page"))
+   (GET (str page-name "/*") [] (render-page "page"))))
+
+(defn make-pages-handler [site-spec]
+  (->> (for [[page-name _] site-spec
+             :let [page-name (str "/" (name page-name))]]
+         (make-page-routes page-name site-spec))
+       (apply routes)))
+
+(defn make-admin-site-handler [site-spec]
+  (routes
+   (-> (context "/api" []
+         (make-apis-handler site-spec))
+       (wrap-restful-format :formats [:transit-json])
+       (wrap-defaults api-defaults))
+   (-> (routes
+        (GET "/" [] (render-page "root"))
+        (context "/pages" []
+          (make-pages-handler site-spec))
+        (route/resources "public"))
+       (wrap-defaults site-defaults))))

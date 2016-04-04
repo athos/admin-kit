@@ -4,6 +4,7 @@
             [environ.core :refer [env]]
             [ring.util.response :refer [response]]
             [ring.adapter.jetty :refer [run-jetty]]
+            [compojure.core :refer [context]]
             [clj-time
              [coerce :as coerce]
              [format :as format]]
@@ -88,9 +89,9 @@
              :format date-formatter}]})
 
 (def app
-  (lustered/make-admin-site-handler "/admin"
-    [[:products {:spec admin-page-spec :adapter adapter}]]))
-
+  (context "/admin" []
+    (lustered/make-admin-site-handler
+      [[:products {:spec admin-page-spec :adapter adapter}]])))
 
 (defn start-server []
   (let [port (Long/parseLong (get env :port "8080"))]
