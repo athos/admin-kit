@@ -21,7 +21,7 @@
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
-(defn make-site-routes [page-name spec]
+(defn make-site-routes [page-name site-spec]
   (-> (routes
        (GET page-name [] (render-root-page))
        (GET (str page-name "/*") [] (render-root-page))
@@ -81,14 +81,14 @@
       (wrap-restful-format :formats [:transit-json])
       (wrap-defaults api-defaults)))
 
-(defn make-admin-page-handler [root-path page-name page-spec adapter]
+(defn- make-admin-page-handler [root-path site-spec page-name page-spec adapter]
   (let [page-name (str "/" (name page-name))]
     (context root-path []
       (context "/_api" []
         (make-api-routes page-name page-spec adapter))
-      (make-site-routes page-name page-spec))))
+      (make-site-routes page-name site-spec))))
 
 (defn make-admin-site-handler [root-path site-spec]
   (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec]
-         (make-admin-page-handler root-path page-name page-spec adapter))
+         (make-admin-page-handler root-path site-spec page-name page-spec adapter))
        (apply routes)))
