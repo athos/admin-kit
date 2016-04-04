@@ -84,7 +84,7 @@
 (defn make-admin-page-handler [root-path page-name page-spec adapter]
   (let [page-name (str "/" (name page-name))]
     (context root-path []
-      (context "/api" []
+      (context "/_api" []
         (make-api-routes page-name page-spec adapter))
       (make-site-routes page-name page-spec))))
 

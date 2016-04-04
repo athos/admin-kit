@@ -8,7 +8,7 @@
  [r/trim-v]
  (fn [db [page-name paths {:keys [method data]} callback]]
    (ajax/ajax-request
-    (cond-> {:uri (str "/admin/api/" page-name
+    (cond-> {:uri (str "/admin/_api/" page-name
                        (if (empty? paths) "" (str "/" (str/join "/" paths))))
              :method method
              :handler (fn [[ok? data]] (if ok? (callback data))) ;; FIXME: should handle errors in a more proper way
