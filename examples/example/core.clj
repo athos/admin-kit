@@ -67,7 +67,7 @@
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
 (def admin-page-spec
-  {:name :products
+  {:name :products      ;; TODO: remove this field from page spec
    :title "商品"
    :fields [{:field :id
              :label "ID"
@@ -88,7 +88,10 @@
              :label "最終更新日"
              :format date-formatter}]})
 
-(def app (lustered/make-admin-page-handler "/admin" admin-page-spec adapter))
+(def app
+  (lustered/make-admin-site-handler "/admin"
+    [[:products {:spec admin-page-spec :adapter adapter}]]))
+
 
 (defn start-server []
   (let [port (Long/parseLong (get env :port "8080"))]

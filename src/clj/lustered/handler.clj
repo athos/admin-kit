@@ -81,9 +81,14 @@
       (wrap-restful-format :formats [:transit-json])
       (wrap-defaults api-defaults)))
 
-(defn make-admin-page-handler [root-path {page-name :name :as spec} adapter]
+(defn make-admin-page-handler [root-path page-name page-spec adapter]
   (let [page-name (str "/" (name page-name))]
     (context root-path []
       (context "/api" []
-        (make-api-routes page-name spec adapter))
-      (make-site-routes page-name spec))))
+        (make-api-routes page-name page-spec adapter))
+      (make-site-routes page-name page-spec))))
+
+(defn make-admin-site-handler [root-path site-spec]
+  (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec]
+         (make-admin-page-handler root-path page-name page-spec adapter))
+       (apply routes)))
