@@ -67,8 +67,7 @@
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
 (def admin-page-spec
-  {:name :products      ;; TODO: remove this field from page spec
-   :title "商品"
+  {:title "商品"
    :fields [{:field :id
              :label "ID"
              :format #(format "%03d" %)}
