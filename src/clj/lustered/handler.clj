@@ -8,7 +8,8 @@
              [defaults :refer [wrap-defaults site-defaults api-defaults]]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [clojure.java.io :as io]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [lustered.adapter :as adapter]))
 
 (defn ->str [x]
   (if (keyword? x)
@@ -61,29 +62,28 @@
                item
                item)))
 
-(defn make-api-routes [page-name spec]
-  (let [{:keys [on-create on-read on-update on-delete]} spec]
-    (-> (routes
-         (GET page-name {:keys [params]}
-           (->> (on-read params)
-                (map #(format-item-fields spec %))
-                res/response))
-         (POST page-name {:keys [params]}
-           (res/response (on-create params)))
-         (PUT (str page-name "/:id") {:keys [params]}
-           (->> (on-update params)
-                (format-item-fields spec)
-                res/response))
-         (DELETE (str page-name "/:id") {:keys [params]}
-           (res/response (on-delete params)))
-         (GET (str page-name "/_spec") []
-              (res/response (remove-fns spec))))
-        (wrap-restful-format :formats [:transit-json])
-        (wrap-defaults api-defaults))))
+(defn make-api-routes [page-name spec adapter]
+  (-> (routes
+       (GET page-name {:keys [params]}
+         (->> (adapter/read adapter params)
+              (map #(format-item-fields spec %))
+              res/response))
+       (POST page-name {:keys [params]}
+         (res/response (adapter/create adapter params)))
+       (PUT (str page-name "/:id") {:keys [params]}
+         (->> (adapter/update adapter params)
+              (format-item-fields spec)
+              res/response))
+       (DELETE (str page-name "/:id") {:keys [params]}
+         (res/response (adapter/delete adapter params)))
+       (GET (str page-name "/_spec") []
+         (res/response (remove-fns spec))))
+      (wrap-restful-format :formats [:transit-json])
+      (wrap-defaults api-defaults)))
 
-(defn make-admin-page-handler [root-path {page-name :name :as spec}]
+(defn make-admin-page-handler [root-path {page-name :name :as spec} adapter]
   (let [page-name (str "/" (name page-name))]
     (context root-path []
       (context "/api" []
-        (make-api-routes page-name spec))
+        (make-api-routes page-name spec adapter))
       (make-site-routes page-name spec))))
