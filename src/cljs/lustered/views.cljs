@@ -88,6 +88,22 @@
             :default-value value
             :on-change (fn [e] (updater (.. e -target -value)))}]))
 
+(defmethod render-field :select [field value _ updater]
+  (let [{field-name :field field-label :label} field]
+    [Input {:type :select
+            :label field-label
+            :label-class-name "col-xs-3"
+            :wrapper-class-name "col-xs-9"
+            :on-change (fn [e]
+                         (let [target (.-target e)]
+                           (updater (-> (.-options target)
+                                        (aget (.-selectedIndex target))
+                                        .-value))))}
+     (for [[val label] (:values field)]
+       ^{:key val} [:option (cond-> {:value val}
+                              (= val value) (merge {:selected true}))
+                    label])]))
+
 (defn modal-form [fields item]
   [:form.form-horizontal
    (for [{field-name :field :as field} fields]
