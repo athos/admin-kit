@@ -30,18 +30,18 @@
     new-item))
 
 (defrecord OnMemoryDBAdapter [products]
-  adapter/Creatable
+  adapter/Create
   (create [this {:keys [price] :as product}]
     (let [price (Long/parseLong price)]
       (add! products (assoc product :price price))))
 
-  adapter/Readable
+  adapter/Read
   (read [this {:keys [id]}]
     (if id
       (filter #(= (:id %) id) (vals @products))
       (sort-by :id (vals @products))))
 
-  adapter/Updatable
+  adapter/Update
   (update [this {:keys [id price] :as product}]
     (let [id (Long/parseLong id)
         price (Long/parseLong price)
@@ -51,7 +51,7 @@
       (-> (swap! products update id merge new-fields)
           (get id))))
 
-  adapter/Deletable
+  adapter/Delete
   (delete [this {:keys [id]}]
     (let [id (Long/parseLong id)]
       (swap! products dissoc id)

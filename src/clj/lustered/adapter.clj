@@ -1,16 +1,14 @@
 (ns lustered.adapter
   (:refer-clojure :exclude [read update]))
 
-(ns-unmap *ns* 'Readable)
-
-(defprotocol Creatable
+(defprotocol Create
   (create [adapter params]))
 
-(defprotocol Readable
+(defprotocol Read
   (read [adapter params]))
 
-(defprotocol Updatable
+(defprotocol Update
   (update [adapter params]))
 
-(defprotocol Deletable
+(defprotocol Delete
   (delete [adapter params]))
