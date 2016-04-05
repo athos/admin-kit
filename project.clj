@@ -33,6 +33,7 @@
   :source-paths ["src/clj" "src/cljc"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
+  :auto-clean false
 
   :cljsbuild {:builds
               [{:id "dev"
