@@ -104,6 +104,24 @@
                               (= val value) (merge {:selected true}))
                     label])]))
 
+(defmethod render-field :radio [field value _ updater]
+  (let [{field-name :field field-label :label} field
+        on-change (fn [e] (updater (.. e -target -value)))]
+    [:div.form-group
+     [:label.control-label.col-xs-3 (:label field)]
+     [:div.col-xs-9
+      (for [[val label] (:values field)
+            :let [id (str (name field-name) val)]]
+        ^{:key val}
+        [:div.radio-inline
+         [:input.form-control (cond-> {:type :radio
+                                       :id id
+                                       :name field-name
+                                       :value val
+                                       :on-change on-change}
+                                (= val value) (merge {:checked true}))]
+         [:label {:for id} label]])]]))
+
 (defn modal-form [fields item]
   [:form.form-horizontal
    (for [{field-name :field :as field} fields]
