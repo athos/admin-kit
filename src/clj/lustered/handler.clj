@@ -74,8 +74,8 @@
        (apply routes)))
 
 (defn render-page [page]
-  (-> (io/file (io/resource (format "public/html/%s.html" page)))
-      res/response
+  (-> (format "public/html/%s.html" page)
+      res/resource-response
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
