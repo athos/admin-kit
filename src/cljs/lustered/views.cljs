@@ -57,8 +57,11 @@
             (for [[index item] (map-indexed vector @items)]
               ^{:key index}
               [:tr
-               (for [{:keys [field]} fields]
-                 ^{:key field} [:td (formatted-value item field)])
+               (for [{:keys [field values]} fields]
+                 (let [displayed (if values
+                                   (get (into {} values) (get item field))
+                                   (formatted-value item field))]
+                   ^{:key field} [:td displayed]))
                (edit-buttons index item)])])]))))
 
 (defn add-new-button []
