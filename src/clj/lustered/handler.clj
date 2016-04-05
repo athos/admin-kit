@@ -51,21 +51,26 @@
                item)))
 
 (defn make-api-routes [page-name page-spec adapter]
-  (routes
-   (GET page-name {:keys [params]}
-        (->> (adapter/read adapter params)
-             (map #(format-item-fields page-spec %))
-             res/response))
-   (POST page-name {:keys [params]}
-         (res/response (adapter/create adapter params)))
-   (PUT (str page-name "/:id") {:keys [params]}
-        (->> (adapter/update adapter params)
-             (format-item-fields page-spec)
-             res/response))
-   (DELETE (str page-name "/:id") {:keys [params]}
-           (res/response (adapter/delete adapter params)))
-   (GET (str page-name "/_spec") []
-        (res/response (remove-fns page-spec)))))
+  (letfn [(run-op [op params]
+            (try
+              (op adapter params)
+              (res/response {:status :ok})
+              (catch Exception e
+                ;; FIXME: add more proper status code
+                (res/response {:status :failed :msg (.getMessage e)}))))]
+   (routes
+    (GET page-name {:keys [params]}
+      (->> (adapter/read adapter params)
+           (map #(format-item-fields page-spec %))
+           res/response))
+    (POST page-name {:keys [params]}
+      (run-op adapter/create params))
+    (PUT (str page-name "/:id") {:keys [params]}
+      (run-op adapter/update params))
+    (DELETE (str page-name "/:id") {:keys [params]}
+      (run-op adapter/delete params))
+    (GET (str page-name "/_spec") []
+      (res/response (remove-fns page-spec))))))
 
 (defn make-apis-handler [site-spec]
   (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec
