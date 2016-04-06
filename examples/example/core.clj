@@ -55,6 +55,31 @@
           (swap! products dissoc id)
           id)))))
 
+(def categories-adapter
+  (let [categories (doto (atom {})
+                     (add! {:name "衣服"})
+                     (add! {:name "食料品"})
+                     (add! {:name "文房具"}))]
+    (reify
+      adapter/Create
+      (create [this category]
+        (add! categories (select-keys category [:name])))
+
+      adapter/Read
+      (read [this _]
+        (sort-by :id (vals @categories)))
+
+      adapter/Update
+      (update [this {:keys [id] :as category}]
+        (prn category)
+        (let [id (Long/parseLong id)]
+          (swap! categories update id merge (select-keys category [:name]))))
+
+      adapter/Delete
+      (delete [this {:keys [id]}]
+        (let [id (Long/parseLong id)]
+          (swap! categories dissoc id))))))
+
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
@@ -79,7 +104,16 @@
                       :format date-formatter}
                      {:field :modified-at
                       :label "最終更新日"
-                      :format date-formatter}]}}]])
+                      :format date-formatter}]}}]
+   [:categories
+    {:adapter categories-adapter
+     :spec {:title "商品カテゴリー"
+            :fields [{:field :id
+                      :label "ID"
+                      :format #(format "%02d" %)}
+                     {:field :name
+                      :label "名称"
+                      :type :text}]}}]])
 
 (def app
   (context "/admin" []
