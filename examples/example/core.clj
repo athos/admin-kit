@@ -17,59 +17,50 @@
   (-> (alter-meta! a update :fresh-id (fnil inc 0))
       :fresh-id))
 
-(defn add! [a {:keys [name furigana price]}]
+(defn add! [a item]
   (let [now (Date.)
         id  (fresh-id a)
-        new-item {:id id
-                  :name name
-                  :furigana furigana
-                  :price price
-                  :created-at now
-                  :modified-at now}]
+        new-item (merge item {:id id :created-at now :modified-at now})]
     (swap! a assoc id new-item)
     new-item))
 
-(defrecord OnMemoryDBAdapter [products]
-  adapter/Create
-  (create [this {:keys [price] :as product}]
-    (let [price (Long/parseLong price)]
-      (add! products (assoc product :price price))))
+(def products-adapter
+  (let [products (doto (atom {})
+                   (add! {:name "ノート", :furigana "ノート", :price 250})
+                   (add! {:name "鉛筆", :furigana "エンピツ", :price 120})
+                   (add! {:name "消しゴム", :furigana "ケシゴム", :price 80}))]
+    (reify
+      adapter/Create
+      (create [this {:keys [price] :as product}]
+        (let [price (Long/parseLong price)]
+          (add! products (assoc product :price price))))
 
-  adapter/Read
-  (read [this {:keys [id]}]
-    (if id
-      (filter #(= (:id %) id) (vals @products))
-      (sort-by :id (vals @products))))
+      adapter/Read
+      (read [this {:keys [id]}]
+        (sort-by :id (vals @products)))
 
-  adapter/Update
-  (update [this {:keys [id price] :as product}]
-    (let [id (Long/parseLong id)
-        price (Long/parseLong price)
-        new-fields (-> product
-                       (select-keys [:name :furigana])
-                       (assoc :price price :modified-at (Date.)))]
-      (-> (swap! products update id merge new-fields)
-          (get id))))
+      adapter/Update
+      (update [this {:keys [id price] :as product}]
+        (let [id (Long/parseLong id)
+              price (Long/parseLong price)
+              new-fields (-> product
+                             (select-keys [:name :furigana])
+                             (assoc :price price :modified-at (Date.)))]
+          (-> (swap! products update id merge new-fields)
+              (get id))))
 
-  adapter/Delete
-  (delete [this {:keys [id]}]
-    (let [id (Long/parseLong id)]
-      (swap! products dissoc id)
-      id)))
-
-(def adapter
-  (->OnMemoryDBAdapter
-   (doto (atom {})
-     (add! {:name "ノート", :furigana "ノート", :price 250})
-     (add! {:name "鉛筆", :furigana "エンピツ", :price 120})
-     (add! { :name "消しゴム", :furigana "ケシゴム", :price 80}))))
+      adapter/Delete
+      (delete [this {:keys [id]}]
+        (let [id (Long/parseLong id)]
+          (swap! products dissoc id)
+          id)))))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
 (def admin-site-spec
   [[:products
-    {:adapter adapter
+    {:adapter products-adapter
      :spec {:title "商品"
             :fields [{:field :id
                       :label "ID"
