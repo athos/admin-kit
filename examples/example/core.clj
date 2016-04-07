@@ -24,37 +24,6 @@
     (swap! a assoc id new-item)
     new-item))
 
-(def products-adapter
-  (let [products (doto (atom {})
-                   (add! {:name "ノート", :furigana "ノート", :price 250})
-                   (add! {:name "鉛筆", :furigana "エンピツ", :price 120})
-                   (add! {:name "消しゴム", :furigana "ケシゴム", :price 80}))]
-    (reify
-      adapter/Create
-      (create [this {:keys [price] :as product}]
-        (let [price (Long/parseLong price)]
-          (add! products (assoc product :price price))))
-
-      adapter/Read
-      (read [this {:keys [id]}]
-        (sort-by :id (vals @products)))
-
-      adapter/Update
-      (update [this {:keys [id price] :as product}]
-        (let [id (Long/parseLong id)
-              price (Long/parseLong price)
-              new-fields (-> product
-                             (select-keys [:name :furigana])
-                             (assoc :price price :modified-at (Date.)))]
-          (-> (swap! products update id merge new-fields)
-              (get id))))
-
-      adapter/Delete
-      (delete [this {:keys [id]}]
-        (let [id (Long/parseLong id)]
-          (swap! products dissoc id)
-          id)))))
-
 (def categories-adapter
   (let [categories (doto (atom {})
                      (add! {:name "衣服"})
@@ -66,12 +35,14 @@
         (add! categories (select-keys category [:name])))
 
       adapter/Read
-      (read [this _]
-        (sort-by :id (vals @categories)))
+      (read [this {:keys [id]}]
+        (if id
+          (let [id (Long/parseLong id)]
+            (filter #(= (:id %) id) (vals @categories)))
+          (sort-by :id (vals @categories))))
 
       adapter/Update
       (update [this {:keys [id] :as category}]
-        (prn category)
         (let [id (Long/parseLong id)]
           (swap! categories update id merge (select-keys category [:name]))))
 
@@ -79,6 +50,63 @@
       (delete [this {:keys [id]}]
         (let [id (Long/parseLong id)]
           (swap! categories dissoc id))))))
+
+(defn category-name [id]
+  (-> (adapter/read categories-adapter {:id (str id)})
+      first
+      :name))
+
+(def products-adapter
+  (let [products (doto (atom {})
+                   (add! {:name "ノート"
+                          :furigana "ノート"
+                          :price 250
+                          :category 3
+                          :category-name (category-name 3)})
+                   (add! {:name "鉛筆"
+                          :furigana "エンピツ"
+                          :price 120
+                          :category 3
+                          :category-name (category-name 3)})
+                   (add! {:name "消しゴム"
+                          :furigana "ケシゴム"
+                          :price 80
+                          :category 3
+                          :category-name (category-name 3)}))]
+    (reify
+      adapter/Create
+      (create [this {:keys [price category] :as product}]
+        (let [price (Long/parseLong price)
+              category (Long/parseLong category)]
+          (add! products
+                (merge product
+                       {:price price
+                        :category category
+                        :category-name (category-name category)}))))
+
+      adapter/Read
+      (read [this {:keys [id]}]
+        (sort-by :id (vals @products)))
+
+      adapter/Update
+      (update [this {:keys [id price category] :as product}]
+        (let [id (Long/parseLong id)
+              price (Long/parseLong price)
+              category (Long/parseLong category)
+              new-fields (-> product
+                             (select-keys [:name :furigana])
+                             (assoc :price price
+                                    :category category
+                                    :category-name (category-name category)
+                                    :modified-at (Date.)))]
+          (-> (swap! products update id merge new-fields)
+              (get id))))
+
+      adapter/Delete
+      (delete [this {:keys [id]}]
+        (let [id (Long/parseLong id)]
+          (swap! products dissoc id)
+          id)))))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
@@ -99,6 +127,11 @@
                      {:field :price
                       :label "値段"
                       :type :text}
+                     {:field :category
+                      :label "カテゴリー"
+                      :type :select
+                      :render :category-name
+                      :values [[1 "ほげ"] [2 "ふが"] [3 "ぴよ"]]}
                      {:field :created-at
                       :label "登録日"
                       :format date-formatter}
