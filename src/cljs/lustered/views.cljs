@@ -97,15 +97,14 @@
             :label field-label
             :label-class-name "col-xs-3"
             :wrapper-class-name "col-xs-9"
+            :defaultValue value
             :on-change (fn [e]
                          (let [target (.-target e)]
                            (updater (-> (.-options target)
                                         (aget (.-selectedIndex target))
                                         .-value))))}
      (for [[val label] (:values field)]
-       ^{:key val} [:option (cond-> {:value val}
-                              (= val value) (merge {:selected true}))
-                    label])]))
+       ^{:key val} [:option {:value val} label])]))
 
 (defmethod render-field :radio [field value _ updater]
   (let [{field-name :field field-label :label} field
