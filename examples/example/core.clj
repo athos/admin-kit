@@ -131,7 +131,8 @@
                       :label "カテゴリー"
                       :type :select
                       :render :category-name
-                      :values [[1 "ほげ"] [2 "ふが"] [3 "ぴよ"]]}
+                      :values #(->> (adapter/read categories-adapter {})
+                                    (map (fn [{:keys [id name]}] [id name])))}
                      {:field :created-at
                       :label "登録日"
                       :format date-formatter}

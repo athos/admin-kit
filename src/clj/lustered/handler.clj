@@ -24,6 +24,13 @@
         x))
     page-spec))
 
+(defn replace-values-fn [page-spec]
+  (->> (for [{:keys [values] :as field} (:fields page-spec)]
+         (if (and values (fn? values))
+           (assoc field :values (values))
+           field))
+       (assoc page-spec :fields)))
+
 (defn default-formatter [x]
   (cond (number? x) x
         :else (str x)))
@@ -76,7 +83,7 @@
     (DELETE (str page-name "/:id") {:keys [params]}
       (run-op adapter/delete params))
     (GET (str page-name "/_spec") []
-      (res/response (remove-fns page-spec))))))
+      (res/response (-> page-spec replace-values-fn remove-fns))))))
 
 (defn make-apis-handler [site-spec]
   (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec
