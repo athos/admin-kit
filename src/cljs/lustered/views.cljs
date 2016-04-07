@@ -21,6 +21,17 @@
 ;; Components
 ;;
 
+(def ListGroup
+  (reagent/adapt-react-class (.. js/ReactBootstrap -ListGroup)))
+(def ListGroupItem
+  (reagent/adapt-react-class (.. js/ReactBootstrap -ListGroupItem)))
+
+(defn pages-navigation []
+  [ListGroup
+   [ListGroupItem {:href "#"} "Link 1"]
+   [ListGroupItem {:href "#"} "Link 2"]
+   [ListGroupItem {:on-click #(js/alert "Hello!!")} "Trigger an alert"]])
+
 (defn edit-buttons [index item]
   (letfn [(on-edit [] (open-modal index item))
           (on-delete []
@@ -177,10 +188,10 @@
       (when @spec
         [:div
          [:div.row
-          [:div.col-md-1]
-          [:div.col-md-10
+          [:div.col-md-3
+           [pages-navigation]]
+          [:div.col-md-9
            [:h1 (:title @spec)]
            [items-table]
-           [add-new-button]]
-          [:div.col-md-1]]
+           [add-new-button]]]
          [edit-modal]]))))
