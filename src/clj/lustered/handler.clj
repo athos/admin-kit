@@ -24,29 +24,35 @@
         x))
     page-spec))
 
-(defn field-formatters [page-spec]
-  (reduce (fn [m field]
-            (if-let [formatter (:format field)]
-              (assoc m (:field field) formatter)
-              m))
-          {}
-          (:fields page-spec)))
-
 (defn default-formatter [x]
   (cond (number? x) x
         :else (str x)))
 
-(defn format-item-fields [page-spec item]
-  (let [formatters (field-formatters page-spec)]
-    (reduce-kv (fn [item field-name field-value]
-                 (let [formatter (or (get formatters field-name)
-                                     default-formatter)
-                       formatted (formatter field-value)]
-                   (if (not= field-value formatted)
-                     (assoc item
-                            (keyword "_formatted" (->str field-name))
-                            formatted)
-                     item)))
+(defn ->renderer [field-name formatter]
+  (fn [item]
+    (formatter (get item field-name))))
+
+(defn field-renderers [page-spec]
+  (reduce (fn [m {field-name :field :as field}]
+            (assoc m field-name
+                   (or (:render field)
+                       (->renderer field-name
+                                   (or (:format field)
+                                       default-formatter)))))
+          {}
+          (:fields page-spec)))
+
+(defn render-item-fields [page-spec item]
+  (let [renderers (field-renderers page-spec)]
+    (reduce-kv (fn [item' field-name field-value]
+                 (if-let [renderer (get renderers field-name)]
+                   (let [rendered (renderer item)]
+                     (if (not= field-value rendered)
+                       (assoc item'
+                              (keyword "_rendered" (->str field-name))
+                              rendered)
+                       item'))
+                   item'))
                item
                item)))
 
@@ -61,7 +67,7 @@
    (routes
     (GET page-name {:keys [params]}
       (->> (adapter/read adapter params)
-           (map #(format-item-fields page-spec %))
+           (map #(render-item-fields page-spec %))
            res/response))
     (POST page-name {:keys [params]}
       (run-op adapter/create params))

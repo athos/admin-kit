@@ -36,10 +36,12 @@
        [:i.fa.fa-circle.fa-stack-2x.text-danger]
        [:i.fa.fa-trash.fa-stack-1x.fa-inverse]]]]))
 
-(defn formatted-value [item field-name]
-  (let [field-name' (keyword "_formatted" (name field-name))]
-    (or (get item field-name')
-        (get item field-name))))
+(defn rendered-value [item field-name values]
+  (or (get item (keyword "_rendered" (name field-name)))
+      (let [field-value (get item field-name)]
+        (if values
+          (get (into {} values) field-value)
+          field-value))))
 
 (defn items-table []
   (let [spec (r/subscribe [:spec])
@@ -58,10 +60,8 @@
               ^{:key index}
               [:tr
                (for [{:keys [field values]} fields]
-                 (let [displayed (if values
-                                   (get (into {} values) (get item field))
-                                   (formatted-value item field))]
-                   ^{:key field} [:td displayed]))
+                 (let [rendered (rendered-value item field values)]
+                   ^{:key field} [:td rendered]))
                (edit-buttons index item)])])]))))
 
 (defn add-new-button []
@@ -73,13 +73,13 @@
 (def Input
   (reagent/adapt-react-class (.. js/ReactBootstrap -Input)))
 
-(defmulti render-field (fn [field value formatted updater] (:type field)))
-(defmethod render-field :default [field value formatted _]
+(defmulti render-field (fn [field value rendered updater] (:type field)))
+(defmethod render-field :default [field value rendered _]
   [FormControlsStatic
    {:label (:label field)
     :label-class-name "col-xs-3"
     :wrapper-class-name "col-xs-9"
-    :value formatted}])
+    :value rendered}])
 
 (defmethod render-field :text [field value _ updater]
   (let [{field-name :field field-label :label} field]
@@ -133,7 +133,7 @@
        (with-meta
          (render-field field
                        (get item field-name)
-                       (formatted-value item field-name)
+                       (rendered-value item field-name (:values field))
                        updater)
          {:key (name field-name)})))])
 

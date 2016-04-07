@@ -58,12 +58,12 @@
  (fn [editing-item [field value]]
    (assoc-in editing-item [:item field] value)))
 
-(defn formatted-field? [field-name]
-  (= (namespace field-name) "_formatted"))
+(defn rendered-field? [field-name]
+  (= (namespace field-name) "_rendered"))
 
 (defn preprocess-item-fields [item]
   (reduce-kv (fn [m k v]
-               (if (formatted-field? k)
+               (if (rendered-field? k)
                  m
                  (assoc m k (str v))))
              {}
