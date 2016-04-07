@@ -76,7 +76,8 @@
                (edit-buttons index item)])])]))))
 
 (defn add-new-button []
-  [:button.btn.btn-success {:type :button :on-click #(open-modal nil {})}
+  [:button.btn.btn-success.pull-right
+   {:type :button :on-click #(open-modal nil {})}
    [:i.fa.fa-plus-square-o] " Add new"])
 
 (def FormControlsStatic
