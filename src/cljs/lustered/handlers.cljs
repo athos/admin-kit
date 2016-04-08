@@ -6,9 +6,9 @@
 (r/register-handler
  :request
  [r/trim-v]
- (fn [db [page-name paths {:keys [method data]} callback]]
+ (fn [db [paths {:keys [method data]} callback]]
    (ajax/ajax-request
-    (cond-> {:uri (str "/admin/api/" page-name
+    (cond-> {:uri (str "/admin/api"
                        (if (empty? paths) "" (str "/" (str/join "/" paths))))
              :method method
              :handler (fn [[ok? data]] (if ok? (callback data))) ;; FIXME: should handle errors in a more proper way
@@ -18,10 +18,10 @@
    db))
 
 (defn request
-  ([page-name paths callback]
-   (request page-name paths {:method :get} callback))
-  ([page-name paths opts callback]
-   (r/dispatch [:request page-name paths opts callback])))
+  ([paths callback]
+   (request paths {:method :get} callback))
+  ([paths opts callback]
+   (r/dispatch [:request paths opts callback])))
 
 (r/register-handler
  :save
@@ -45,7 +45,7 @@
  :fetch-items
  [r/trim-v]
  (fn [db [page-name]]
-   (request page-name [] #(save :items (vec %)))
+   (request [page-name] #(save :items (vec %)))
    db))
 
 (defn fetch-items [page-name]
@@ -55,7 +55,7 @@
  :page-init
  [r/trim-v]
  (fn [_ [page-name]]
-   (request page-name ["_spec"]
+   (request [page-name "_spec"]
             (fn [spec]
               (save :spec spec)
               (fetch-items page-name)))
@@ -87,7 +87,7 @@
  (fn [{:keys [page-name] :as db} [item callback]]
    (let [item' (preprocess-item-fields item)]
      ;; FIXME: callback invocation should wait for completing fetching items
-     (request page-name [] {:method :post :data item'}
+     (request [page-name] {:method :post :data item'}
               (fn [_] (fetch-items page-name) (callback)))
      db)))
 
@@ -97,7 +97,7 @@
  (fn [{:keys [page-name] :as db} [index item callback]]
    (let [item' (preprocess-item-fields item)]
      ;; FIXME: callback invocation should wait for completing fetching items
-     (request page-name [(:id item)] {:method :put :data item'}
+     (request [page-name (:id item)] {:method :put :data item'}
               (fn [_] (fetch-items page-name) (callback))))
    db))
 
@@ -105,6 +105,6 @@
  :request-delete-item
  [r/trim-v]
  (fn [{:keys [page-name] :as db} [item]]
-   (request page-name [(:id item)] {:method :delete}
+   (request [page-name (:id item)] {:method :delete}
             (fn [_] (fetch-items page-name)))
    db))
