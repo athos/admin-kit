@@ -36,7 +36,8 @@
  :init
  [r/trim-v]
  (fn [_ [callback]]
-   (callback)))
+   (callback)
+   {}))
 
 (defn init [callback]
   (r/dispatch [:init callback]))
@@ -54,12 +55,12 @@
 (r/register-handler
  :page-init
  [r/trim-v]
- (fn [_ [page-name]]
+ (fn [db [page-name]]
    (request [page-name "_spec"]
             (fn [spec]
               (save :spec spec)
               (fetch-items page-name)))
-   {:page-name page-name :modal-shown? false}))
+   (assoc db :page-name page-name :modal-shown? false)))
 
 (defn page-init [page-name]
   (r/dispatch [:page-init page-name]))
