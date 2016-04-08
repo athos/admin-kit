@@ -43,7 +43,7 @@
   (r/dispatch [:fetch-items page-name]))
 
 (r/register-handler
- :init
+ :page-init
  [r/trim-v]
  (fn [_ [page-name]]
    (request page-name ["_spec"]
@@ -51,6 +51,9 @@
               (save :spec spec)
               (fetch-items page-name)))
    {:page-name page-name :modal-shown? false}))
+
+(defn page-init [page-name]
+  (r/dispatch [:page-init page-name]))
 
 (r/register-handler
  :edit-item-field

@@ -34,7 +34,7 @@
                    (fn [e]
                      (.preventDefault e)
                      (.pushState js/history page-name nil path)
-                     (r/dispatch [:init page-name])))]
+                     (handlers/page-init page-name)))]
     (fn []
       [ListGroup
        (for [{page-name :name page-title :title} page-specs

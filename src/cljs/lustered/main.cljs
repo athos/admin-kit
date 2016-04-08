@@ -1,7 +1,7 @@
 (ns lustered.main
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
-            [lustered.handlers]
+            [lustered.handlers :as handlers]
             [lustered.views :as views]))
 
 (enable-console-print!)
@@ -12,12 +12,12 @@
   (let [[match? page-name] (re-find #"/pages(?:/([^/]+)/?)?$" path)]
     (if match?
       (if page-name
-        (r/dispatch [:init page-name])))))
+        (handlers/page-init page-name)))))
 
 (.addEventListener js/window "popstate"
                    (fn [e]
                      (when-let [page-name (.-state e)]
-                       (r/dispatch [:init page-name]))))
+                       (handlers/page-init page-name))))
 
 ;;
 ;; Entry point
