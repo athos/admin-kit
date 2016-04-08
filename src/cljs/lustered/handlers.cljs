@@ -33,6 +33,15 @@
   (r/dispatch [:save key val]))
 
 (r/register-handler
+ :init
+ [r/trim-v]
+ (fn [_ [callback]]
+   (callback)))
+
+(defn init [callback]
+  (r/dispatch [:init callback]))
+
+(r/register-handler
  :fetch-items
  [r/trim-v]
  (fn [db [page-name]]

@@ -14,19 +14,19 @@
       (if page-name
         (handlers/page-init page-name)))))
 
-(.addEventListener js/window "popstate"
-                   (fn [e]
-                     (when-let [page-name (.-state e)]
-                       (handlers/page-init page-name))))
-
 ;;
 ;; Entry point
 ;;
 
 (defn ^:export main []
-  (dispatch (.. js/window -location -pathname))
+  (handlers/init #(dispatch (.. js/window -location -pathname)))
   (reagent/render [views/app] (.getElementById js/document "app")))
 
 (.addEventListener js/window "load" main)
+
+(.addEventListener js/window "popstate"
+                   (fn [e]
+                     (when-let [page-name (.-state e)]
+                       (handlers/page-init page-name))))
 
 (defn on-js-reload [])
