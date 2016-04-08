@@ -60,7 +60,10 @@
             (fn [spec]
               (save :spec spec)
               (fetch-items page-name)))
-   (assoc db :page-name page-name :modal-shown? false)))
+   (-> db
+       (dissoc :spec :items)
+       (assoc :page-name page-name)
+       (assoc :modal-shown? false))))
 
 (defn page-init [page-name]
   (r/dispatch [:page-init page-name]))
