@@ -27,10 +27,22 @@
   (reagent/adapt-react-class (.. js/ReactBootstrap -ListGroupItem)))
 
 (defn pages-navigation []
-  [ListGroup
-   [ListGroupItem {:href "#"} "Link 1"]
-   [ListGroupItem {:href "#"} "Link 2"]
-   [ListGroupItem {:on-click #(js/alert "Hello!!")} "Trigger an alert"]])
+  (let [base-path "/admin/pages"
+        page-specs [{:name :products :title "商品"}
+                    {:name :categories :title "商品カテゴリー"}]
+        dispatch (fn [path page-name]
+                   (fn [e]
+                     (.preventDefault e)
+                     (.pushState js/history page-name nil path)
+                     (r/dispatch [:init page-name])))]
+    (fn []
+      [ListGroup
+       (for [{page-name :name page-title :title} page-specs
+             :let [page-name (name page-name)
+                   path (str base-path "/" page-name)]]
+         ^{:key page-name}
+         [ListGroupItem {:href path :on-click (dispatch path page-name)}
+          page-title])])))
 
 (defn edit-buttons [index item]
   (letfn [(on-edit [] (open-modal index item))
