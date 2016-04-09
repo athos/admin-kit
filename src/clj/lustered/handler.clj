@@ -45,6 +45,7 @@
                    (or (:render field)
                        (->renderer field-name
                                    (or (:format field)
+                                       (some->> (:values field) (into {}))
                                        default-formatter)))))
           {}
           (:fields page-spec)))
