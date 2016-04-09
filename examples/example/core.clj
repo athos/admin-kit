@@ -62,17 +62,20 @@
                           :furigana "ノート"
                           :price 250
                           :category 3
-                          :category-name (category-name 3)})
+                          :category-name (category-name 3)
+                          :benefits true})
                    (add! {:name "鉛筆"
                           :furigana "エンピツ"
                           :price 120
                           :category 3
-                          :category-name (category-name 3)})
+                          :category-name (category-name 3)
+                          :benefits false})
                    (add! {:name "消しゴム"
                           :furigana "ケシゴム"
                           :price 80
                           :category 3
-                          :category-name (category-name 3)}))]
+                          :category-name (category-name 3)
+                          :benefits true}))]
     (reify
       adapter/Create
       (create [this {:keys [price category] :as product}]
@@ -133,6 +136,10 @@
                       :render :category-name
                       :values #(->> (adapter/read categories-adapter {})
                                     (map (fn [{:keys [id name]}] [id name])))}
+                     {:field :benefits
+                      :label "特典"
+                      :type :checkbox
+                      :values {true "あり" false "なし"}}
                      {:field :created-at
                       :label "登録日"
                       :format date-formatter}

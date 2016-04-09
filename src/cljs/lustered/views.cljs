@@ -148,6 +148,18 @@
                                 (= val value) (merge {:checked true}))]
          [:label {:for id} label]])]]))
 
+(defmethod render-field :checkbox [field value _ updater]
+  (let [{field-name :field field-label :label} field
+        on-change (fn [e] (updater (.. e -target -checked)))]
+    [:div.form-group
+     [:label.control-label.col-xs-3 field-label]
+     [:div.col-xs-9
+      [:label.checkbox-inline
+       [:input {:type :checkbox
+                :checked value
+                :on-change on-change}]
+       (get (into {} (:values field)) true)]]]))
+
 (defn modal-form [fields item]
   [:form.form-horizontal
    (for [{field-name :field :as field} fields]
