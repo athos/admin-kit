@@ -78,29 +78,33 @@
                           :benefits true}))]
     (reify
       adapter/Create
-      (create [this {:keys [price category] :as product}]
+      (create [this {:keys [price category benefits] :as product}]
         (let [price (Long/parseLong price)
-              category (Long/parseLong category)]
+              category (Long/parseLong category)
+              benefits (Boolean/valueOf benefits)]
           (add! products
                 (merge product
                        {:price price
                         :category category
-                        :category-name (category-name category)}))))
+                        :category-name (category-name category)
+                        :benefits benefits}))))
 
       adapter/Read
       (read [this {:keys [id]}]
         (sort-by :id (vals @products)))
 
       adapter/Update
-      (update [this {:keys [id price category] :as product}]
+      (update [this {:keys [id price category benefits] :as product}]
         (let [id (Long/parseLong id)
               price (Long/parseLong price)
               category (Long/parseLong category)
+              benefits (Boolean/valueOf benefits)
               new-fields (-> product
                              (select-keys [:name :furigana])
                              (assoc :price price
                                     :category category
                                     :category-name (category-name category)
+                                    :benefits benefits
                                     :modified-at (Date.)))]
           (-> (swap! products update id merge new-fields)
               (get id))))
