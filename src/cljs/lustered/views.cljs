@@ -116,7 +116,10 @@
             :on-change (fn [e] (updater (.. e -target -value)))}]))
 
 (defmethod render-field :select [field value _ updater]
-  (let [{field-name :field field-label :label} field]
+  (let [{field-name :field field-label :label} field
+        values (:values field)
+        value (or value (first (keys values)))]
+    (updater value)
     [Input {:type :select
             :label field-label
             :label-class-name "col-xs-3"
@@ -127,12 +130,15 @@
                            (updater (-> (.-options target)
                                         (aget (.-selectedIndex target))
                                         .-value))))}
-     (for [[val label] (:values field)]
+     (for [[val label] values]
        ^{:key val} [:option {:value val} label])]))
 
 (defmethod render-field :radio [field value _ updater]
   (let [{field-name :field field-label :label} field
+        values (:values field)
+        value (or value (first (keys values)))
         on-change (fn [e] (updater (.. e -target -value)))]
+    (updater value)
     [:div.form-group
      [:label.control-label.col-xs-3 (:label field)]
      [:div.col-xs-9
@@ -150,7 +156,9 @@
 
 (defmethod render-field :checkbox [field value _ updater]
   (let [{field-name :field field-label :label} field
+        value (boolean value)
         on-change (fn [e] (updater (.. e -target -checked)))]
+    (updater value)
     [:div.form-group
      [:label.control-label.col-xs-3 field-label]
      [:div.col-xs-9
