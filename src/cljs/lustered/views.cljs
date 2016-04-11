@@ -74,7 +74,8 @@
         [:table.table.table-striped
          [:thead
           [:tr
-           (for [{:keys [field label]} fields]
+           (for [{:keys [field label detail?]} fields
+                 :when (not detail?)]
              ^{:key field} [:th label])
            [:th]]]
          (when @items
@@ -82,7 +83,8 @@
             (for [[index item] (map-indexed vector @items)]
               ^{:key index}
               [:tr
-               (for [{:keys [field values]} fields]
+               (for [{:keys [field values detail?]} fields
+                     :when (not detail?)]
                  (let [rendered (rendered-value item field values)]
                    ^{:key field} [:td rendered]))
                (edit-buttons index item)])])]))))

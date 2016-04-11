@@ -124,7 +124,8 @@
      :spec {:title "商品"
             :fields [{:field :id
                       :label "ID"
-                      :format #(format "%03d" %)}
+                      :format #(format "%03d" %)
+                      :detail? true}
                      {:field :name
                       :label "名前"
                       :type :text}
@@ -147,10 +148,12 @@
                       :default true}
                      {:field :created-at
                       :label "登録日"
-                      :format date-formatter}
+                      :format date-formatter
+                      :detail? true}
                      {:field :modified-at
                       :label "最終更新日"
-                      :format date-formatter}]}}]
+                      :format date-formatter
+                      :detail? true}]}}]
    [:categories
     {:adapter categories-adapter
      :spec {:title "商品カテゴリー"
