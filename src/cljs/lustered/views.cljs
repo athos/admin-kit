@@ -27,9 +27,8 @@
   (reagent/adapt-react-class (.. js/ReactBootstrap -ListGroupItem)))
 
 (defn pages-navigation []
-  (let [base-path "/admin/pages"
-        page-specs [{:name :products :title "商品"}
-                    {:name :categories :title "商品カテゴリー"}]
+  (let [base-path (r/subscribe [:base-path])
+        pages (r/subscribe [:pages])
         dispatch (fn [path page-name]
                    (fn [e]
                      (.preventDefault e)
@@ -37,12 +36,14 @@
                      (handlers/page-init page-name)))]
     (fn []
       [ListGroup
-       (for [{page-name :name page-title :title} page-specs
-             :let [page-name (name page-name)
-                   path (str base-path "/" page-name)]]
-         ^{:key page-name}
-         [ListGroupItem {:href path :on-click (dispatch path page-name)}
-          page-title])])))
+       (when @pages
+         (->> (for [{page-name :name page-title :title} @pages
+                    :let [page-name (name page-name)
+                          path (str @base-path "/" page-name)]]
+                ^{:key page-name}
+                [ListGroupItem {:href path :on-click (dispatch path page-name)}
+                 page-title])
+              doall))])))
 
 (defn edit-buttons [index item]
   (letfn [(on-edit [] (open-modal index item))
