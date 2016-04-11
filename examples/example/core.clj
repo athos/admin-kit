@@ -143,7 +143,8 @@
                      {:field :benefits
                       :label "特典"
                       :type :checkbox
-                      :values {true "あり" false "なし"}}
+                      :values {true "あり" false "なし"}
+                      :default true}
                      {:field :created-at
                       :label "登録日"
                       :format date-formatter}

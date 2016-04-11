@@ -88,9 +88,15 @@
                (edit-buttons index item)])])]))))
 
 (defn add-new-button []
-  [:button.btn.btn-success.pull-right
-   {:type :button :on-click #(open-modal nil {})}
-   [:i.fa.fa-plus-square-o] " Add new"])
+  (let [spec (r/subscribe [:spec])]
+    (fn []
+      (let [new-item (->> (for [{:keys [field default]} (:fields spec)
+                                :when default]
+                            [field default])
+                          (into {}))]
+        [:button.btn.btn-success.pull-right
+         {:type :button :on-click #(open-modal nil new-item)}
+         [:i.fa.fa-plus-square-o] " Add new"]))))
 
 (def FormControlsStatic
   (reagent/adapt-react-class (.. js/ReactBootstrap -FormControls -Static)))
