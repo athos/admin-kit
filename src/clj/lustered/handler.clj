@@ -86,11 +86,18 @@
     (GET (str page-name "/_spec") []
       (res/response (-> page-spec replace-values-fn remove-fns))))))
 
+(defn make-root-api-handler [site-spec]
+  (let [site-overview (mapv (fn [[page-name {:keys [spec]}]]
+                              {:name page-name :title (:title spec)})
+                            site-spec)]
+    (GET "/" []
+      (res/response site-overview))))
+
 (defn make-apis-handler [site-spec]
   (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec
              :let [page-name (str "/" (name page-name))]]
          (make-api-routes page-name page-spec adapter))
-       (apply routes)))
+       (apply routes (make-root-api-handler site-spec))))
 
 (defn render-page [page]
   (-> (format "public/html/%s.html" page)
