@@ -8,18 +8,15 @@
 
 (println "Edits to this text should show up in your developer console.")
 
-(defn dispatch [path]
-  (let [[match? page-name] (re-find #"/pages(?:/([^/]+)/?)?$" path)]
-    (if match?
-      (if page-name
-        (handlers/page-init page-name)))))
-
 ;;
 ;; Entry point
 ;;
 
 (defn ^:export main []
-  (handlers/init #(dispatch (.. js/window -location -pathname)))
+  (when-let [[match? base-path page-name]
+             (re-matches #"^(.+/pages)(?:/([^/]+)/?)?$"
+                         (.. js/window -location -pathname))]
+    (handlers/init base-path #(handlers/page-init page-name)))
   (reagent/render [views/app] (.getElementById js/document "app")))
 
 (.addEventListener js/window "load" main)

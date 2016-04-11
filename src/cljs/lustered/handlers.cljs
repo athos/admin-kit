@@ -35,12 +35,14 @@
 (r/register-handler
  :init
  [r/trim-v]
- (fn [_ [callback]]
-   (callback)
-   {}))
+ (fn [_ [base-path callback]]
+   (request [] (fn [pages]
+                 (save :pages pages)
+                 (callback)))
+   {:base-path base-path}))
 
-(defn init [callback]
-  (r/dispatch [:init callback]))
+(defn init [base-path callback]
+  (r/dispatch [:init base-path callback]))
 
 (r/register-handler
  :fetch-items

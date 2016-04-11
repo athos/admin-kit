@@ -3,6 +3,16 @@
   (:require [re-frame.core :as r]))
 
 (r/register-sub
+ :base-path
+ (fn [db _]
+   (reaction (:base-path @db))))
+
+(r/register-sub
+ :pages
+ (fn [db _]
+   (reaction (:pages @db))))
+
+(r/register-sub
  :spec
  (fn [db _]
    (reaction (:spec @db))))
