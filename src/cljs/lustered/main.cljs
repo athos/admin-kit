@@ -2,7 +2,7 @@
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [lustered.handlers :as handlers]
-            [lustered.views :as views]))
+            [lustered.views.core :as views]))
 
 (enable-console-print!)
 
