@@ -64,19 +64,31 @@
                item
                item)))
 
+(defmacro with-error-handling [& body]
+  `(letfn [(error-response# [status# ^Exception e#]
+             (-> (res/response {:status :failed :msg (.getMessage e#)})
+                 (res/status status#)))]
+     (try
+       ~@body
+       (catch IllegalArgumentException e#
+         (error-response# 400 e#))
+       (catch Exception e#
+         (error-response# 500 e#)))))
+
+(defn respond [& {:as args}]
+  (res/response (merge {:status :ok} args)))
+
 (defn make-api-routes [page-name page-spec adapter]
   (letfn [(run-op [op params]
-            (try
+            (with-error-handling
               (op adapter params)
-              (res/response {:status :ok})
-              (catch Exception e
-                ;; FIXME: add more proper status code
-                (res/response {:status :failed :msg (.getMessage e)}))))]
+              (respond)))]
    (routes
     (GET page-name {:keys [params]}
-      (->> (adapter/read adapter params)
-           (map #(render-item-fields page-spec %))
-           res/response))
+      (with-error-handling
+        (->> (adapter/read adapter params)
+             (map #(render-item-fields page-spec %))
+             (respond :items))))
     (POST page-name {:keys [params]}
       (run-op adapter/create params))
     (PUT (str page-name "/:id") {:keys [params]}
@@ -84,14 +96,19 @@
     (DELETE (str page-name "/:id") {:keys [params]}
       (run-op adapter/delete params))
     (GET (str page-name "/_spec") []
-      (res/response (-> page-spec replace-values-fn remove-fns))))))
+      (with-error-handling
+        (->> page-spec
+             replace-values-fn
+             remove-fns
+             (respond :spec)))))))
 
 (defn make-root-api-handler [site-spec]
   (let [site-overview (mapv (fn [[page-name {:keys [spec]}]]
                               {:name page-name :title (:title spec)})
                             site-spec)]
     (GET "/" []
-      (res/response site-overview))))
+      (with-error-handling
+        (respond :overview site-overview)))))
 
 (defn make-apis-handler [site-spec]
   (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec

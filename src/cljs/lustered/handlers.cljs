@@ -11,7 +11,7 @@
     (cond-> {:uri (str "/admin/api"
                        (if (empty? paths) "" (str "/" (str/join "/" paths))))
              :method method
-             :handler (fn [[ok? data]] (if ok? (callback data))) ;; FIXME: should handle errors in a more proper way
+             :handler (fn [[ok? data]] (callback ok? data))
              :format (ajax/transit-request-format)
              :response-format (ajax/transit-response-format)}
       data (assoc :params data)))
@@ -32,13 +32,28 @@
 (defn save [key val]
   (r/dispatch [:save key val]))
 
+(defn error [res]
+  (save :errors [(:msg res)]))
+
+(defn edit-error [res]
+  (save :edit-errors [(:msg res)]))
+
+(defn wrap-with-error-handler [handler f]
+  (fn [ok? {:keys [status] :as res}]
+    (if ok?
+      (if (= status :ok)
+        (f res)
+        (handler res))  ;; this should not happen
+      (handler (:response res)))))
+
 (r/register-handler
  :init
  [r/trim-v]
  (fn [_ [base-path callback]]
-   (request [] (fn [pages]
-                 (save :pages pages)
-                 (callback)))
+   (request [] (wrap-with-error-handler error
+                 (fn [{:keys [overview]}]
+                   (save :pages overview)
+                   (callback))))
    {:base-path base-path}))
 
 (defn init [base-path callback]
@@ -48,7 +63,10 @@
  :fetch-items
  [r/trim-v]
  (fn [db [page-name]]
-   (request [page-name] #(save :items (vec %)))
+   (request [page-name]
+            (wrap-with-error-handler error
+              (fn [{:keys [items]}]
+                (save :items items))))
    db))
 
 (defn fetch-items [page-name]
@@ -59,9 +77,10 @@
  [r/trim-v]
  (fn [db [page-name]]
    (request [page-name "_spec"]
-            (fn [spec]
-              (save :spec spec)
-              (fetch-items page-name)))
+            (wrap-with-error-handler error
+              (fn [{:keys [spec]}]
+                (save :spec spec)
+                (fetch-items page-name))))
    (-> db
        (dissoc :spec :items)
        (assoc :page-name page-name)
@@ -92,9 +111,11 @@
  [r/trim-v]
  (fn [{:keys [page-name] :as db} [item callback]]
    (let [item' (preprocess-item-fields item)]
-     ;; FIXME: callback invocation should wait for completing fetching items
      (request [page-name] {:method :post :data item'}
-              (fn [_] (fetch-items page-name) (callback)))
+              (wrap-with-error-handler edit-error
+                (fn [_]
+                  (fetch-items page-name)
+                  (callback))))
      db)))
 
 (r/register-handler
@@ -102,9 +123,11 @@
  [r/trim-v]
  (fn [{:keys [page-name] :as db} [index item callback]]
    (let [item' (preprocess-item-fields item)]
-     ;; FIXME: callback invocation should wait for completing fetching items
      (request [page-name (:id item)] {:method :put :data item'}
-              (fn [_] (fetch-items page-name) (callback))))
+              (wrap-with-error-handler edit-error
+                (fn [_]
+                  (fetch-items page-name)
+                  (callback)))))
    db))
 
 (r/register-handler
@@ -112,5 +135,7 @@
  [r/trim-v]
  (fn [{:keys [page-name] :as db} [item]]
    (request [page-name (:id item)] {:method :delete}
-            (fn [_] (fetch-items page-name)))
+            (wrap-with-error-handler error
+              (fn [_]
+                (fetch-items page-name))))
    db))
