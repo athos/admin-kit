@@ -1,6 +1,6 @@
 (defproject lustered "0.1.0-SNAPSHOT"
   :description "Admin site as data"
-  :url "http://example.com/FIXME"
+  :url "https://github.com/athos/Lustered"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -15,12 +15,10 @@
                  [ring/ring-core "1.4.0"]
                  [ring/ring-defaults "0.2.0"]
                  [compojure "1.5.0"]
-                 [enlive "1.1.6"]
 
                  ;; for client side
                  [org.clojure/clojurescript "1.8.40"]
                  [cljs-ajax "0.5.4"]
-                 [bidi "2.0.4"]
                  [reagent "0.5.1" :exclusions [cljsjs/react]]
                  [re-frame "0.7.0"]
                  [cljsjs/jquery "2.2.2-0"]
@@ -39,17 +37,13 @@
               [{:id "dev"
                 :source-paths ["src/cljs" "src/cljc"]
 
-                ;; If no code is to be run, set :figwheel true for continued automagical reloading
-                :figwheel {:on-jsload "lustered.core/on-js-reload"}
+                :figwheel :true
 
                 :compiler {:main lustered.main
                            :asset-path "../js/compiled/out"
                            :output-to "resources/public/js/compiled/lustered.js"
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true}}
-               ;; This next build is an compressed minified build for
-               ;; production. You can build this with:
-               ;; lein cljsbuild once min
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :compiler {:output-to "resources/public/js/compiled/lustered.js"
