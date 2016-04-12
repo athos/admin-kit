@@ -23,13 +23,15 @@
 (defn app []
   (let [spec (r/subscribe [:spec])]
     (fn []
-      (when @spec
-        [:div
-         [:div.row
-          [:div.col-md-3
-           [nav/pages-navigation]]
-          [:div.col-md-9
-           [:h1 (:title @spec)]
-           [table/items-table]
-           [add-new-button]]]
-         [modal/edit-modal]]))))
+      [:div
+       [:div.row
+        [:div.col-md-3
+         [nav/pages-navigation]]
+        [:div.col-md-9
+         (when @spec
+           [:h1 (:title @spec)])
+         (when @spec
+           [table/items-table])
+         [add-new-button]]]
+       (when @spec
+         [modal/edit-modal])])))
