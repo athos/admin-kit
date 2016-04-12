@@ -2,6 +2,7 @@
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
+            [lustered.handlers :as handlers]
             [lustered.subs]
             [lustered.views.utils :as utils]
             [lustered.views.forms :as forms]))
@@ -30,6 +31,18 @@
     [:button.btn.btn-primary {:type "button" :on-click on-submit}
      "Save"]))
 
+(def Alert
+  (reagent/adapt-react-class (.. js/ReactBootstrap -Alert)))
+
+(defn edit-error-alert []
+  (let [edit-errors (r/subscribe [:edit-errors])]
+    (fn []
+      (when @edit-errors
+        [Alert {:bs-style :danger
+                :on-dismiss #(handlers/save :edit-errors nil)}
+         (for [error @edit-errors]
+           ^{:key error} [:p error])]))))
+
 (def Modal
   (reagent/adapt-react-class (.. js/ReactBootstrap -Modal)))
 (def ModalHeader
@@ -50,7 +63,9 @@
        [ModalHeader {:close-button true}
         [ModalTitle (:title @spec)]]
        (when-let [{:keys [item]} @editing-item]
-         [ModalBody (modal-form (:fields @spec) item)])
+         [ModalBody
+          [edit-error-alert]
+          (modal-form (:fields @spec) item)])
        [ModalFooter
         [:button.btn.btn-default {:type "button" :on-click utils/close-modal}
          "Close"]

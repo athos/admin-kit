@@ -9,6 +9,16 @@
             [lustered.views.table :as table]
             [lustered.views.modal :as modal]))
 
+(def Alert (reagent/adapt-react-class (.-Alert js/ReactBootstrap)))
+
+(defn error-alert []
+  (let [errors (r/subscribe [:errors])]
+    (fn []
+      (when @errors
+        [Alert {:bs-style :danger :on-dismiss #(handlers/save :errors nil)}
+         (for [error @errors]
+           ^{:keys error} [:p error])]))))
+
 (defn add-new-button []
   (let [spec (r/subscribe [:spec])]
     (fn []
@@ -21,7 +31,8 @@
          [:i.fa.fa-plus-square-o] " Add new"]))))
 
 (defn app []
-  (let [spec (r/subscribe [:spec])]
+  (let [spec (r/subscribe [:spec])
+        errors (r/subscribe [:errors])]
     (fn []
       [:div
        [:div.row
@@ -30,6 +41,7 @@
         [:div.col-md-9
          (when @spec
            [:h1 (:title @spec)])
+         [error-alert]
          (when @spec
            [table/items-table])
          [add-new-button]]]

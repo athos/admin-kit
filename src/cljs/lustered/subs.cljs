@@ -13,6 +13,16 @@
    (reaction (:pages @db))))
 
 (r/register-sub
+ :errors
+ (fn [db _]
+   (reaction (:errors @db))))
+
+(r/register-sub
+ :edit-errors
+ (fn [db _]
+   (reaction (:edit-errors @db))))
+
+(r/register-sub
  :spec
  (fn [db _]
    (reaction (:spec @db))))
