@@ -25,6 +25,16 @@
             :default-value value
             :on-change (fn [e] (updater (.. e -target -value)))}]))
 
+(defmethod render-field :password [field value _ updater]
+  (let [{field-name :field field-label :label} field]
+    [Input {:type :password
+            :label field-label
+            :label-class-name "col-xs-3"
+            :wrapper-class-name "col-xs-9"
+            :placeholder field-label
+            :default-value value
+            :on-change (fn [e] (updater (.. e -target -value)))}]))
+
 (defmethod render-field :select [field value _ updater]
   (let [{field-name :field field-label :label} field
         values (:values field)
