@@ -46,23 +46,22 @@
 (defmethod render-field :radio [field value _ updater]
   (let [{field-name :field field-label :label} field
         values (:values field)
-        value (or value (first (keys values)))
+        value (str (or value (first (keys values))))
         on-change (fn [e] (updater (.. e -target -value)))]
     (updater value)
     [:div.form-group
      [:label.control-label.col-xs-3 (:label field)]
      [:div.col-xs-9
       (for [[val label] (:values field)
-            :let [id (str (name field-name) val)]]
+            :let [val (str val)]]
         ^{:key val}
-        [:div.radio-inline
-         [:input.form-control (cond-> {:type :radio
-                                       :id id
-                                       :name field-name
-                                       :value val
-                                       :on-change on-change}
-                                (= val value) (merge {:checked true}))]
-         [:label {:for id} label]])]]))
+        [:label.radio-inline
+         [:input {:type :radio
+                  :name field-name
+                  :value val
+                  :checked (= val value)
+                  :on-change on-change}]
+         label])]]))
 
 (defmethod render-field :checkbox [field value _ updater]
   (let [{field-name :field field-label :label} field
