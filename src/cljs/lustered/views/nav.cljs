@@ -3,7 +3,8 @@
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
             [lustered.handlers :as handlers]
-            [lustered.subs]))
+            [lustered.subs]
+            [lustered.utils :as utils]))
 
 (def ListGroup
   (reagent/adapt-react-class (.. js/ReactBootstrap -ListGroup)))
@@ -22,8 +23,10 @@
        (when @pages
          (->> (for [{page-name :name page-title :title} @pages
                     :let [page-name (name page-name)
-                          path (str @base-path "/" page-name)]]
+                          page-state {:page-name page-name}]]
                 ^{:key page-name}
-                [ListGroupItem {:href path :on-click (dispatch page-name)}
+                [ListGroupItem {:href (utils/page-state->uri @base-path
+                                                             page-state)
+                                :on-click (dispatch page-name)}
                  page-title])
               doall))])))
