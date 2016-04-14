@@ -62,32 +62,49 @@
 (r/register-handler
  :fetch-items
  [r/trim-v]
- (fn [db [page-name]]
+ (fn [db [page-name offset limit]]
    (request [page-name]
+            {:method :get
+             :data (cond-> {}
+                     offset (assoc :_offset offset)
+                     limit (assoc :_limit limit))}
             (wrap-with-error-handler error
               (fn [{:keys [items]}]
                 (save :items items))))
    db))
 
-(defn fetch-items [page-name]
-  (r/dispatch [:fetch-items page-name]))
+(defn fetch-items [{:keys [page-name offset limit]}]
+  (r/dispatch [:fetch-items page-name offset limit]))
 
 (r/register-handler
  :page-init
  [r/trim-v]
- (fn [db [page-name]]
+ (fn [db [{:keys [page-name] :as page-state}]]
    (request [page-name "_spec"]
             (wrap-with-error-handler error
               (fn [{:keys [spec]}]
                 (save :spec spec)
-                (fetch-items page-name))))
+                (fetch-items page-state))))
    (-> db
        (dissoc :spec :items)
-       (assoc :page-name page-name)
+       (assoc :page-state page-state)
        (assoc :modal-shown? false))))
 
-(defn page-init [page-name]
-  (r/dispatch [:page-init page-name]))
+(defn page-init [page-state]
+  (r/dispatch [:page-init page-state]))
+
+(r/register-handler
+ :move-to
+ [r/trim-v]
+ (fn [{:keys [base-path] :as db} [page-name]]
+   (let [path (str base-path "/" page-name)
+         page-state {:page-name page-name}]
+     (.pushState js/history (clj->js page-state) nil path)
+     (page-init page-state))
+   db))
+
+(defn move-to [page-name]
+  (r/dispatch [:move-to page-name]))
 
 (r/register-handler
  :edit-item-field
@@ -109,33 +126,33 @@
 (r/register-handler
  :request-create-item
  [r/trim-v]
- (fn [{:keys [page-name] :as db} [item callback]]
+ (fn [{:keys [page-state] :as db} [item callback]]
    (let [item' (preprocess-item-fields item)]
-     (request [page-name] {:method :post :data item'}
+     (request [(:page-name page-state)] {:method :post :data item'}
               (wrap-with-error-handler edit-error
                 (fn [_]
-                  (fetch-items page-name)
+                  (fetch-items page-state)
                   (callback))))
      db)))
 
 (r/register-handler
  :request-update-item
  [r/trim-v]
- (fn [{:keys [page-name] :as db} [index item callback]]
+ (fn [{:keys [page-state] :as db} [index item callback]]
    (let [item' (preprocess-item-fields item)]
-     (request [page-name (:id item)] {:method :put :data item'}
+     (request [(:page-name page-state) (:id item)] {:method :put :data item'}
               (wrap-with-error-handler edit-error
                 (fn [_]
-                  (fetch-items page-name)
+                  (fetch-items page-state)
                   (callback)))))
    db))
 
 (r/register-handler
  :request-delete-item
  [r/trim-v]
- (fn [{:keys [page-name] :as db} [item]]
-   (request [page-name (:id item)] {:method :delete}
+ (fn [{:keys [page-state] :as db} [item]]
+   (request [(:page-name page-state) (:id item)] {:method :delete}
             (wrap-with-error-handler error
               (fn [_]
-                (fetch-items page-name))))
+                (fetch-items page-state))))
    db))

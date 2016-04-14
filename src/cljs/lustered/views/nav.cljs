@@ -13,11 +13,10 @@
 (defn pages-navigation []
   (let [base-path (r/subscribe [:base-path])
         pages (r/subscribe [:pages])
-        dispatch (fn [path page-name]
+        dispatch (fn [page-name]
                    (fn [e]
                      (.preventDefault e)
-                     (.pushState js/history page-name nil path)
-                     (handlers/page-init page-name)))]
+                     (handlers/move-to page-name)))]
     (fn []
       [ListGroup
        (when @pages
@@ -25,6 +24,6 @@
                     :let [page-name (name page-name)
                           path (str @base-path "/" page-name)]]
                 ^{:key page-name}
-                [ListGroupItem {:href path :on-click (dispatch path page-name)}
+                [ListGroupItem {:href path :on-click (dispatch page-name)}
                  page-title])
               doall))])))
