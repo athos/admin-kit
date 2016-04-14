@@ -82,11 +82,18 @@
   (letfn [(run-op [op params]
             (with-error-handling
               (op adapter params)
-              (respond)))]
+              (respond)))
+          (->long [x]
+            (if (string? x)
+              (Long/parseLong x)
+              x))]
    (routes
     (GET page-name {:keys [params]}
       (with-error-handling
-        (->> (adapter/read adapter params)
+        (->> (-> params
+                 (update :_offset (fnil ->long 0))
+                 (update :_limit (fnil ->long 10)))
+             (adapter/read adapter)
              (map #(render-item-fields page-spec %))
              (respond :items))))
     (POST page-name {:keys [params]}
