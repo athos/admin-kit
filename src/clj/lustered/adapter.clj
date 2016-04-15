@@ -13,25 +13,41 @@
 (defprotocol Delete
   (delete [adapter params]))
 
-(defn make-adapter [{:keys [create read update delete]}]
-  (let [unsupported (fn [op]
-                      (fn [params]
-                        (let [msg (str (name op) " is not supported")]
-                          (throw (UnsupportedOperationException. msg)))))
-        on-create (or create (unsupported :create))
-        on-read (or read (unsupported :read))
-        on-update (or update (unsupported :update))
-        on-delete (or delete (unsupported :delete))]
-    (reify
-      Create
-      (create [this params]
-        (on-create params))
-      Read
-      (read [this params]
-        (on-read params))
-      Update
-      (update [this params]
-        (on-update params))
-      Delete
-      (delete [this params]
-        (on-delete params)))))
+(defn- unsupported [op]
+  (let [msg (str (name op) " is not supported")]
+    (throw (UnsupportedOperationException. msg))))
+
+(extend-type Object
+  Create
+  (create [this params]
+    (unsupported :create))
+  Read
+  (read [this params]
+    (unsupported :read))
+  Update
+  (update [this params]
+    (unsupported :update))
+  Delete
+  (delete [this params]
+    (unsupported :delete)))
+
+(defn make-adapter [{on-create :create, on-read :read, on-update :update
+                     on-delete :delete}]
+  (let [adapter (reify Read
+                  (read [this params]
+                    (on-read params)))]
+    (when on-create
+      (extend-type (class adapter)
+        Create
+        (create [this params]
+          (on-create params))))
+    (when on-update
+      (extend-type (class adapter)
+        Update
+        (update [this params]
+          (on-update params))))
+    (when on-delete
+      (extend-type (class adapter)
+        Delete
+        (delete [this params]
+          (on-delete params))))))
