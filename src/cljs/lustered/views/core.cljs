@@ -30,6 +30,21 @@
          {:type :button :on-click #(utils/open-modal nil new-item)}
          [:i.fa.fa-plus-square-o] " Add new"]))))
 
+(def Pagination (reagent/adapt-react-class (.-Pagination js/ReactBootstrap)))
+
+(defn pagination []
+  (let [items-count (r/subscribe [:items-count])]
+    (fn []
+      (when @items-count
+        [Pagination {:items (quot @items-count 10)
+                     :max-buttons 5
+                     :prev true
+                     :next true
+                     :first true
+                     :last true
+                     :ellipsis true
+                     :boundary-links true}]))))
+
 (defn app []
   (let [spec (r/subscribe [:spec])
         errors (r/subscribe [:errors])]
@@ -44,6 +59,7 @@
          [error-alert]
          (when @spec
            [table/items-table])
+         [pagination]
          [add-new-button]]]
        (when @spec
          [modal/edit-modal])])))
