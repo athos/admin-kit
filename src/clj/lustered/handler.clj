@@ -78,24 +78,26 @@
 (defn respond [& {:as args}]
   (res/response (merge {:status :ok} args)))
 
+(defn handle-read [page-spec adapter params]
+  (let [->long (fn [x] (if (string? x) (Long/parseLong x) x))]
+    (with-error-handling
+      (let [params (-> params
+                       (update :_offset (fnil ->long 0))
+                       (update :_limit (fnil ->long 10)))
+            items (->> (adapter/read adapter params)
+                       (map #(render-item-fields page-spec %)))]
+        (if (satisfies? adapter/Count adapter)
+          (respond :items items :count (adapter/count adapter params))
+          (respond :items items))))))
+
 (defn make-api-routes [page-name page-spec adapter]
   (letfn [(run-op [op params]
             (with-error-handling
               (op adapter params)
-              (respond)))
-          (->long [x]
-            (if (string? x)
-              (Long/parseLong x)
-              x))]
+              (respond)))]
    (routes
     (GET page-name {:keys [params]}
-      (with-error-handling
-        (->> (-> params
-                 (update :_offset (fnil ->long 0))
-                 (update :_limit (fnil ->long 10)))
-             (adapter/read adapter)
-             (map #(render-item-fields page-spec %))
-             (respond :items))))
+      (handle-read page-spec adapter params))
     (POST page-name {:keys [params]}
       (run-op adapter/create params))
     (PUT (str page-name "/:id") {:keys [params]}

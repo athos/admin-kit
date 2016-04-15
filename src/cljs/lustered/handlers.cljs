@@ -69,8 +69,8 @@
                      offset (assoc :_offset offset)
                      limit (assoc :_limit limit))}
             (wrap-with-error-handler error
-              (fn [{:keys [items]}]
-                (save :items items))))
+              (fn [{:keys [items count]}]
+                (save :items {:items items :count count}))))
    db))
 
 (defn fetch-items [{:keys [page-name offset limit]}]
