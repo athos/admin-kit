@@ -33,17 +33,24 @@
 (def Pagination (reagent/adapt-react-class (.-Pagination js/ReactBootstrap)))
 
 (defn pagination []
-  (let [total-pages (r/subscribe [:total-pages])]
+  (let [page-state (r/subscribe [:page-state])
+        total-pages (r/subscribe [:total-pages])]
     (fn []
       (when @total-pages
-        [Pagination {:items @total-pages
-                     :max-buttons 5
-                     :prev true
-                     :next true
-                     :first true
-                     :last true
-                     :ellipsis true
-                     :boundary-links true}]))))
+        (let [{:keys [page-name page-no]} @page-state
+              on-select (fn [event selected-event]
+                          (let [page-no (.-eventKey selected-event)]
+                            (handlers/move-to page-name :page-no page-no)))]
+          [Pagination {:items @total-pages
+                       :max-buttons 5
+                       :prev true
+                       :next true
+                       :first true
+                       :last true
+                       :ellipsis true
+                       :boundary-links true
+                       :active-page page-no
+                       :on-select on-select}])))))
 
 (defn app []
   (let [spec (r/subscribe [:spec])

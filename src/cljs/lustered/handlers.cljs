@@ -1,7 +1,8 @@
 (ns lustered.handlers
   (:require [re-frame.core :as r]
             [ajax.core :as ajax]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [lustered.utils :as utils]))
 
 (r/register-handler
  :request
@@ -96,15 +97,16 @@
 (r/register-handler
  :move-to
  [r/trim-v]
- (fn [{:keys [base-path] :as db} [page-name]]
-   (let [path (str base-path "/" page-name)
-         page-state {:page-name page-name}]
+ (fn [{:keys [base-path] :as db} [page-name page-no]]
+   (let [page-state (cond-> {:page-name page-name}
+                      page-no (assoc :page-no page-no))
+         path (utils/page-state->uri base-path page-state)]
      (.pushState js/history (clj->js page-state) nil path)
      (page-init page-state))
    db))
 
-(defn move-to [page-name]
-  (r/dispatch [:move-to page-name]))
+(defn move-to [page-name & {:keys [page-no]}]
+  (r/dispatch [:move-to page-name page-no]))
 
 (r/register-handler
  :edit-item-field
