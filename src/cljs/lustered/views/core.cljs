@@ -33,10 +33,10 @@
 (def Pagination (reagent/adapt-react-class (.-Pagination js/ReactBootstrap)))
 
 (defn pagination []
-  (let [items-count (r/subscribe [:items-count])]
+  (let [total-pages (r/subscribe [:total-pages])]
     (fn []
-      (when @items-count
-        [Pagination {:items (quot @items-count 10)
+      (when @total-pages
+        [Pagination {:items @total-pages
                      :max-buttons 5
                      :prev true
                      :next true

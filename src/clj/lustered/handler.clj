@@ -97,7 +97,11 @@
             items (->> (adapter/read adapter params)
                        (map #(render-item-fields page-spec %)))]
         (if (satisfies? adapter/Count adapter)
-          (respond :items items :count (adapter/count adapter params))
+          (respond :items items
+                   :total-pages (-> (adapter/count adapter params)
+                                    (/ (double items-per-page))
+                                    Math/ceil
+                                    long))
           (respond :items items))))))
 
 (defn make-api-routes [page-name page-spec adapter config]

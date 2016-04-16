@@ -30,12 +30,12 @@
 (r/register-sub
  :items
  (fn [db _]
-   (reaction (get-in @db [:items :items]))))
+   (reaction (:items @db))))
 
 (r/register-sub
- :items-count
+ :total-pages
  (fn [db _]
-   (reaction (get-in @db [:items :count]))))
+   (reaction (:total-pages @db))))
 
 (r/register-sub
  :editing-item
