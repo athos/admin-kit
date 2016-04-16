@@ -79,11 +79,21 @@
   (res/response (merge {:status :ok} args)))
 
 (defn handle-read [page-spec adapter params]
-  (let [->long (fn [x] (if (string? x) (Long/parseLong x) x))]
+  (letfn [(->long [x] (if (string? x) (Long/parseLong x) x))
+          (normalize-params [params]
+            (let [items-per-page 10
+                  offset (or (some-> (:_offset params) ->long)
+                             (some-> (:_page params)
+                                     ->long
+                                     (* items-per-page))
+                             0)
+                  limit (or (some-> (:_limit params) ->long)
+                            items-per-page)]
+              (-> params
+                  (assoc :_offset offset :_limit limit)
+                  (dissoc :_page))))]
     (with-error-handling
-      (let [params (-> params
-                       (update :_offset (fnil ->long 0))
-                       (update :_limit (fnil ->long 10)))
+      (let [params (normalize-params params)
             items (->> (adapter/read adapter params)
                        (map #(render-item-fields page-spec %)))]
         (if (satisfies? adapter/Count adapter)
