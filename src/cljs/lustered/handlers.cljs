@@ -62,20 +62,19 @@
 (r/register-handler
  :fetch-items
  [r/trim-v]
- (fn [db [page-name offset limit]]
+ (fn [db [page-name page-no]]
    (request [page-name]
             {:method :get
              :data (cond-> {}
-                     offset (assoc :_offset offset)
-                     limit (assoc :_limit limit))}
+                     page-no (assoc :_page page-no))}
             (wrap-with-error-handler error
               (fn [{:keys [items total-pages]}]
                 (save :items items)
                 (save :total-pages total-pages))))
    db))
 
-(defn fetch-items [{:keys [page-name offset limit]}]
-  (r/dispatch [:fetch-items page-name offset limit]))
+(defn fetch-items [{:keys [page-name page-no]}]
+  (r/dispatch [:fetch-items page-name page-no]))
 
 (r/register-handler
  :page-init
