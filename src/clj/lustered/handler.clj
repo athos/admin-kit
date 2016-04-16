@@ -78,11 +78,11 @@
 (defn respond [& {:as args}]
   (res/response (merge {:status :ok} args)))
 
-(defn handle-read [page-spec adapter params]
+(defn handle-read [page-spec adapter params {:keys [items-per-page]
+                                             :or {items-per-page 10}}]
   (letfn [(->long [x] (if (string? x) (Long/parseLong x) x))
           (normalize-params [params]
-            (let [items-per-page 10
-                  offset (or (some-> (:_offset params) ->long)
+            (let [offset (or (some-> (:_offset params) ->long)
                              (some-> (:_page params)
                                      ->long
                                      (* items-per-page))
@@ -100,14 +100,14 @@
           (respond :items items :count (adapter/count adapter params))
           (respond :items items))))))
 
-(defn make-api-routes [page-name page-spec adapter]
+(defn make-api-routes [page-name page-spec adapter config]
   (letfn [(run-op [op params]
             (with-error-handling
               (op adapter params)
               (respond)))]
    (routes
     (GET page-name {:keys [params]}
-      (handle-read page-spec adapter params))
+      (handle-read page-spec adapter params config))
     (POST page-name {:keys [params]}
       (run-op adapter/create params))
     (PUT (str page-name "/:id") {:keys [params]}
@@ -129,10 +129,10 @@
       (with-error-handling
         (respond :overview site-overview)))))
 
-(defn make-apis-handler [site-spec]
+(defn make-apis-handler [site-spec config]
   (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec
              :let [page-name (str "/" (name page-name))]]
-         (make-api-routes page-name page-spec adapter))
+         (make-api-routes page-name page-spec adapter config))
        (apply routes (make-root-api-handler site-spec))))
 
 (defn render-page [page]
@@ -147,15 +147,17 @@
          (GET page-name [] (render-page "page")))
        (apply routes)))
 
-(defn make-admin-site-handler [site-spec]
-  (routes
-   (-> (context "/api" []
-         (make-apis-handler site-spec))
-       (wrap-restful-format :formats [:transit-json])
-       (wrap-defaults api-defaults))
-   (-> (routes
-        (GET "/" [] (render-page "root"))
-        (context "/pages" []
-          (make-pages-handler site-spec))
-        (route/resources "public"))
-       (wrap-defaults site-defaults))))
+(defn make-admin-site-handler
+  ([site-spec] (make-admin-site-handler site-spec {}))
+  ([site-spec config]
+   (routes
+    (-> (context "/api" []
+          (make-apis-handler site-spec config))
+        (wrap-restful-format :formats [:transit-json])
+        (wrap-defaults api-defaults))
+    (-> (routes
+         (GET "/" [] (render-page "root"))
+         (context "/pages" []
+           (make-pages-handler site-spec))
+         (route/resources "public"))
+        (wrap-defaults site-defaults)))))
