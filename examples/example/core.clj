@@ -57,25 +57,24 @@
       :name))
 
 (def products-adapter
-  (let [products (doto (atom {})
-                   (add! {:name "ノート"
-                          :furigana "ノート"
-                          :price 250
-                          :category 3
-                          :category-name (category-name 3)
-                          :benefits true})
-                   (add! {:name "鉛筆"
-                          :furigana "エンピツ"
-                          :price 120
-                          :category 3
-                          :category-name (category-name 3)
-                          :benefits false})
-                   (add! {:name "消しゴム"
-                          :furigana "ケシゴム"
-                          :price 80
-                          :category 3
-                          :category-name (category-name 3)
-                          :benefits true}))]
+  (let [random-product (fn [i]
+                         (let [furiganas {"衣服" "イフク"
+                                          "食料品" "ショクリョウヒン"
+                                          "文房具" "ブンボウグ"}
+                               category (-> (count furiganas)
+                                            rand-int
+                                            inc)
+                               category-name (category-name category)]
+                           {:name (str category-name i)
+                            :furigana (str (get furiganas category-name) i)
+                            :price (* 10 (rand-int 100))
+                            :category category
+                            :category-name category-name
+                            :benefits (= (rand-int 2) 0)}))
+        products (let [products (atom {})]
+                   (doseq [product (map random-product (range 100))]
+                     (add! products product))
+                   products)]
     (reify
       adapter/Create
       (create [this {:keys [price category benefits] :as product}]
@@ -90,8 +89,10 @@
                         :benefits benefits}))))
 
       adapter/Read
-      (read [this {:keys [id]}]
-        (sort-by :id (vals @products)))
+      (read [this {:keys [id _offset _limit]}]
+        (cond->> (sort-by :id (vals @products))
+          _offset (drop _offset)
+          _limit (take _limit)))
 
       adapter/Update
       (update [this {:keys [id price category benefits] :as product}]
@@ -113,7 +114,11 @@
       (delete [this {:keys [id]}]
         (let [id (Long/parseLong id)]
           (swap! products dissoc id)
-          id)))))
+          id))
+
+      adapter/Count
+      (count [this params]
+        (clojure.core/count @products)))))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
