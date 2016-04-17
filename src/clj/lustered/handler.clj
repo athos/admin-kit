@@ -85,6 +85,7 @@
             (let [offset (or (some-> (:_offset params) ->long)
                              (some-> (:_page params)
                                      ->long
+                                     dec
                                      (* items-per-page))
                              0)
                   limit (or (some-> (:_limit params) ->long)
