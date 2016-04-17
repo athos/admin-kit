@@ -28,7 +28,7 @@
                           (into {}))]
         [:button.btn.btn-success.pull-right
          {:type :button :on-click #(utils/open-modal nil new-item)}
-         [:i.fa.fa-plus-square-o] " Add new"]))))
+         [:i.fa.fa-plus-circle] " Add new"]))))
 
 (def Pagination (reagent/adapt-react-class (.-Pagination js/ReactBootstrap)))
 
@@ -41,7 +41,8 @@
               on-select (fn [event selected-event]
                           (let [page-no (.-eventKey selected-event)]
                             (handlers/move-to page-name :page-no page-no)))]
-          [Pagination {:items @total-pages
+          [:div.text-center
+           [Pagination {:items @total-pages
                        :max-buttons 5
                        :prev true
                        :next true
@@ -50,7 +51,7 @@
                        :ellipsis true
                        :boundary-links true
                        :active-page page-no
-                       :on-select on-select}])))))
+                       :on-select on-select}]])))))
 
 (defn app []
   (let [spec (r/subscribe [:spec])
@@ -63,10 +64,10 @@
         [:div.col-md-9
          (when @spec
            [:h1 (:title @spec)])
+         [add-new-button]
          [error-alert]
          (when @spec
            [table/items-table])
-         [pagination]
-         [add-new-button]]]
+         [pagination]]]
        (when @spec
          [modal/edit-modal])])))
