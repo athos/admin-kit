@@ -120,6 +120,28 @@
       (count [this params]
         (clojure.core/count @products)))))
 
+(def product-sets-adapter
+  (let [sets (atom {})]
+    (reify
+      adapter/Create
+      (create [this params]
+        (add! sets (select-keys params [:name :products])))
+
+      adapter/Read
+      (read [this params]
+        (sort-by :id (vals @sets)))
+
+      adapter/Update
+      (update [this {:keys [id] :as product-set}]
+        (let [id (Long/parseLong id)]
+          (swap! sets update id merge (select-keys product-set
+                                                   [:name :products]))))
+
+      adapter/Delete
+      (delete [this {:keys [id]}]
+        (let [id (Long/parseLong id)]
+          (swap! sets dissoc id))))))
+
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
 
@@ -158,6 +180,22 @@
                      {:field :modified-at
                       :label "最終更新日"
                       :format date-formatter
+                      :detail? true}]}}]
+   [:product-sets
+    {:adapter product-sets-adapter
+     :spec {:title "商品セット"
+            :fields [{:field :id
+                      :label "ID"
+                      :format #(format "%02d" %)
+                      :detail? true}
+                     {:field :name
+                      :label "名称"
+                      :type :text}
+                     {:field :products
+                      :label "対象商品"
+                      :type :multi-select
+                      :values #(->> (adapter/read products-adapter {})
+                                    (map (fn [{:keys [id name]}] [id name])))
                       :detail? true}]}}]
    [:categories
     {:adapter categories-adapter
