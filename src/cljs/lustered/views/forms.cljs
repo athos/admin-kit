@@ -104,3 +104,21 @@
                                 updater)))}
      (for [[val label] (:values field)]
        ^{:key val} [:option {:value val} label])]))
+
+(defmethod render-field :multi-checkbox [field value _ updater]
+  (let [{field-name :field field-label :label} field
+        value (or value #{})]
+    (updater value)
+    [:div.form-group
+     [:label.control-label.col-xs-3 field-label]
+     [:div.col-xs-9
+      (for [[val label] (:values field)]
+        ^{:key val}
+        [:label.checkbox-inline
+         [:input {:type :checkbox
+                  :checked (contains? value val)
+                  :on-change (fn [e]
+                               (if (.. e -target -checked)
+                                 (updater (conj value val))
+                                 (updater (disj value val))))}]
+         label])]]))
