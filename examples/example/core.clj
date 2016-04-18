@@ -72,7 +72,7 @@
                             :category-name category-name
                             :benefits (= (rand-int 2) 0)}))
         products (let [products (atom {})]
-                   (doseq [product (map random-product (range 100))]
+                   (doseq [product (map random-product (range 25))]
                      (add! products product))
                    products)]
     (reify
@@ -193,7 +193,7 @@
                       :type :text}
                      {:field :products
                       :label "対象商品"
-                      :type :multi-select
+                      :type :multi-checkbox
                       :values #(->> (adapter/read products-adapter {})
                                     (map (fn [{:keys [id name]}] [id name])))
                       :detail? true}]}}]
