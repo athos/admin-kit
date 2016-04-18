@@ -86,3 +86,21 @@
                 :checked value
                 :on-change on-change}]
        (get (into {} (:values field)) true)]]]))
+
+(defmethod render-field :multi-select [field value _ updater]
+  (let [{:field-name :field field-label :label} field
+        value (or value [])]
+    (updater value)
+    [Input {:type :select
+            :multiple true
+            :label field-label
+            :label-class-name "col-xs-3"
+            :wrapper-class-name "col-xs-9"
+            :value (into-array value)
+            :on-change (fn [e]
+                         (let [target (.-target e)]
+                           (->> (array-seq (.-selectedOptions target))
+                                (mapv #(.-value %))
+                                updater)))}
+     (for [[val label] (:values field)]
+       ^{:key val} [:option {:value val} label])]))
