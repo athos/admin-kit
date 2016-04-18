@@ -50,19 +50,18 @@
           {}
           (:fields page-spec)))
 
-(defn render-item-fields [page-spec item]
-  (let [renderers (field-renderers page-spec)]
-    (reduce-kv (fn [item' field-name field-value]
-                 (if-let [renderer (get renderers field-name)]
-                   (let [rendered (renderer item)]
-                     (if (not= field-value rendered)
-                       (assoc item'
-                              (keyword "_rendered" (->str field-name))
-                              rendered)
-                       item'))
-                   item'))
-               item
-               item)))
+(defn render-item-fields [renderers item]
+  (reduce-kv (fn [item' field-name field-value]
+               (if-let [renderer (get renderers field-name)]
+                 (let [rendered (renderer item)]
+                   (if (not= field-value rendered)
+                     (assoc item'
+                            (keyword "_rendered" (->str field-name))
+                            rendered)
+                     item'))
+                 item'))
+             item
+             item))
 
 (defmacro with-error-handling [& body]
   `(letfn [(error-response# [status# ^Exception e#]
@@ -95,8 +94,9 @@
                   (dissoc :_page))))]
     (with-error-handling
       (let [params (normalize-params params)
+            renderers (field-renderers (replace-values-fn page-spec))
             items (->> (adapter/read adapter params)
-                       (map #(render-item-fields page-spec %)))]
+                       (map #(render-item-fields renderers %)))]
         (if (satisfies? adapter/Count adapter)
           (respond :items items
                    :total-pages (-> (adapter/count adapter params)
