@@ -16,6 +16,9 @@
 (defprotocol Count
   (count [adapter params]))
 
+(defprotocol Validate
+  (validate [adapter params]))
+
 (defn- unsupported [op]
   (let [msg (str (name op) " is not supported")]
     (throw (UnsupportedOperationException. msg))))
@@ -35,7 +38,7 @@
     (unsupported :delete)))
 
 (defn make-adapter [{on-create :create, on-read :read, on-update :update
-                     on-delete :delete, on-count :count}]
+                     on-delete :delete, on-count :count, on-validate :validate}]
   (let [adapter (reify Read
                   (read [this params]
                     (on-read params)))]
@@ -58,4 +61,9 @@
       (extend-type (class adapter)
         Count
         (count [this params]
-          (on-count params))))))
+          (on-count params))))
+    (when on-validate
+      (extend-type (class adapter)
+        Validate
+        (validate [this params]
+          (on-validate params))))))
