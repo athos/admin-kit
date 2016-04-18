@@ -63,47 +63,49 @@
              item
              item))
 
-(defmacro with-error-handling [& body]
-  `(letfn [(error-response# [status# ^Exception e#]
-             (-> (res/response {:status :failed :msg (.getMessage e#)})
-                 (res/status status#)))]
-     (try
-       ~@body
-       (catch IllegalArgumentException e#
-         (error-response# 400 e#))
-       (catch Exception e#
-         (error-response# 500 e#)))))
-
 (defn respond [& {:as args}]
   (res/response (merge {:status :ok} args)))
 
-(defn handle-read [page-spec adapter params {:keys [items-per-page]
-                                             :or {items-per-page 10}}]
-  (letfn [(->long [x] (if (string? x) (Long/parseLong x) x))
-          (normalize-params [params]
-            (let [offset (or (some-> (:_offset params) ->long)
-                             (some-> (:_page params)
-                                     ->long
-                                     dec
-                                     (* items-per-page))
-                             0)
-                  limit (or (some-> (:_limit params) ->long)
-                            items-per-page)]
-              (-> params
-                  (assoc :_offset offset :_limit limit)
-                  (dissoc :_page))))]
-    (with-error-handling
-      (let [params (normalize-params params)
-            renderers (field-renderers (replace-values-fn page-spec))
-            items (->> (adapter/read adapter params)
-                       (map #(render-item-fields renderers %)))]
-        (if (satisfies? adapter/Count adapter)
-          (respond :items items
-                   :total-pages (-> (adapter/count adapter params)
-                                    (/ (double items-per-page))
-                                    Math/ceil
-                                    long))
-          (respond :items items))))))
+(defn error-response [status ^Exception e]
+  (-> (res/response {:status :failed :msg (.getMessage e)})
+      (res/status status)))
+
+(defmacro with-error-handling [& body]
+  `(try
+     ~@body
+     (catch IllegalArgumentException e#
+       (error-response 400 e#))
+     (catch Exception e#
+       (error-response 500 e#))))
+
+(defn normalize-params [params {:keys [items-per-page]}]
+  (let [->long (fn [x] (if (string? x) (Long/parseLong x) x))
+        offset (or (some-> (:_offset params) ->long)
+                   (some-> (:_page params)
+                           ->long
+                           dec
+                           (* items-per-page))
+                   0)
+        limit (or (some-> (:_limit params) ->long)
+                  items-per-page)]
+    (-> params
+        (assoc :_offset offset :_limit limit)
+        (dissoc :_page))))
+
+(defn handle-read [page-spec adapter params config]
+  (with-error-handling
+    (let [config (merge {:items-per-page 10} config)
+          params (normalize-params params config)
+          renderers (field-renderers (replace-values-fn page-spec))
+          items (->> (adapter/read adapter params)
+                     (map #(render-item-fields renderers %)))]
+      (if (satisfies? adapter/Count adapter)
+        (respond :items items
+                 :total-pages (-> (adapter/count adapter params)
+                                  (/ (double (:items-per-page config)))
+                                  Math/ceil
+                                  long))
+        (respond :items items)))))
 
 (defn make-api-routes [page-name page-spec adapter config]
   (letfn [(run-op [op params]
