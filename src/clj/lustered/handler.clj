@@ -107,7 +107,7 @@
                                   long))
         (respond :items items)))))
 
-(defn make-api-routes [page-name page-spec adapter config]
+(defn make-api-routes [page-name page-spec adapter validator config]
   (letfn [(run-op [op params]
             (with-error-handling
               (op adapter params)
@@ -137,9 +137,9 @@
         (respond :overview site-overview)))))
 
 (defn make-apis-handler [site-spec config]
-  (->> (for [[page-name {page-spec :spec adapter :adapter}] site-spec
+  (->> (for [[page-name {page-spec :spec :keys [adapter validator]}] site-spec
              :let [page-name (str "/" (name page-name))]]
-         (make-api-routes page-name page-spec adapter config))
+         (make-api-routes page-name page-spec adapter validator config))
        (apply routes (make-root-api-handler site-spec))))
 
 (defn render-page [page]
