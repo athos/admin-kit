@@ -63,20 +63,20 @@
              item
              item))
 
-(defn respond [& {:as args}]
-  (res/response (merge {:status :ok} args)))
-
-(defn error-response [status ^Exception e]
-  (-> (res/response {:status :failed :msg (.getMessage e)})
-      (res/status status)))
+(defn response
+  ([params] (response :ok params))
+  ([status params] (response 200 status params))
+  ([code status params]
+   (-> (res/response (merge {:status status} params))
+       (res/status code))))
 
 (defmacro with-error-handling [& body]
   `(try
      ~@body
      (catch IllegalArgumentException e#
-       (error-response 400 e#))
+       (response 400 :error (.getMessage e#)))
      (catch Exception e#
-       (error-response 500 e#))))
+       (response 500 :error (.getMessage e#)))))
 
 (defn normalize-params [params {:keys [items-per-page]}]
   (let [->long (fn [x] (if (string? x) (Long/parseLong x) x))
@@ -99,19 +99,20 @@
           renderers (field-renderers (replace-values-fn page-spec))
           items (->> (adapter/read adapter params)
                      (map #(render-item-fields renderers %)))]
-      (if (satisfies? adapter/Count adapter)
-        (respond :items items
-                 :total-pages (-> (adapter/count adapter params)
-                                  (/ (double (:items-per-page config)))
-                                  Math/ceil
-                                  long))
-        (respond :items items)))))
+      (-> (cond-> {:items items}
+            (satisfies? adapter/Count adapter)
+            #_=> (assoc :total-page
+                        (-> (adapter/count adapter params)
+                            (/ (double (:items-per-page config)))
+                            Math/ceil
+                            long)))
+          response))))
 
 (defn make-api-routes [page-name page-spec adapter validator config]
   (letfn [(run-op [op params]
             (with-error-handling
               (op adapter params)
-              (respond)))]
+              (response {})))]
    (routes
     (GET page-name {:keys [params]}
       (handle-read page-spec adapter params config))
@@ -126,7 +127,8 @@
         (->> page-spec
              replace-values-fn
              remove-fns
-             (respond :spec)))))))
+             (array-map :spec)
+             response))))))
 
 (defn make-root-api-handler [site-spec]
   (let [site-overview (mapv (fn [[page-name {:keys [spec]}]]
@@ -134,7 +136,7 @@
                             site-spec)]
     (GET "/" []
       (with-error-handling
-        (respond :overview site-overview)))))
+        (response {:overview site-overview})))))
 
 (defn make-apis-handler [site-spec config]
   (->> (for [[page-name {page-spec :spec :keys [adapter validator]}] site-spec
