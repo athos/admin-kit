@@ -112,14 +112,21 @@
   (letfn [(run-op [op params]
             (with-error-handling
               (op adapter params)
-              (response {})))]
+              (response {})))
+          (with-validation [params f]
+            (with-error-handling
+              (if-let [result (and validator (validator params))]
+                (response 400 :validation-failed result)
+                (f))))]
    (routes
     (GET page-name {:keys [params]}
       (handle-read page-spec adapter params config))
     (POST page-name {:keys [params]}
-      (run-op adapter/create params))
+      (with-validation params
+        #(run-op adapter/create params)))
     (PUT (str page-name "/:id") {:keys [params]}
-      (run-op adapter/update params))
+      (with-validation params
+        #(run-op adapter/update params)))
     (DELETE (str page-name "/:id") {:keys [params]}
       (run-op adapter/delete params))
     (GET (str page-name "/_spec") []
