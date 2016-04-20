@@ -7,18 +7,25 @@
             [lustered.views.utils :as utils]
             [lustered.views.forms :as forms]))
 
-(defn modal-form [fields item]
-  [:form.form-horizontal
-   (for [{field-name :field :as field} fields]
-     (letfn [(updater [val]
-               (r/dispatch [:edit-item-field field-name val]))]
-       (with-meta
-         (forms/render-field field
-                             (get item field-name)
-                             (utils/rendered-value item field-name
-                                                   (:values field))
-                             updater)
-         {:key (name field-name)})))])
+(defn modal-form [item]
+  (let [spec (r/subscribe [:spec])
+        errors (r/subscribe [:validation-errors])]
+    (fn []
+      (let [fields (:fields @spec)]
+        [:form.form-horizontal
+         (-> (for [{field-name :field :as field} fields]
+               (letfn [(updater [val]
+                         (r/dispatch [:edit-item-field field-name val]))]
+                 (with-meta
+                   (forms/render-field field
+                                       (get item field-name)
+                                       (utils/rendered-value item
+                                                             field-name
+                                                             (:values field))
+                                       (get @errors field-name)
+                                       updater)
+                   {:key field-name})))
+             doall)]))))
 
 (defn modal-submit-button [editing-item]
   (letfn [(on-submit [_]
@@ -65,7 +72,7 @@
        (when-let [{:keys [item]} @editing-item]
          [ModalBody
           [edit-error-alert]
-          (modal-form (:fields @spec) item)])
+          [modal-form item]])
        [ModalFooter
         [:button.btn.btn-default {:type "button" :on-click utils/close-modal}
          "Close"]
