@@ -23,6 +23,11 @@
    (reaction (:edit-errors @db))))
 
 (r/register-sub
+ :validation-errors
+ (fn [db _]
+   (reaction (:validation-errors @db))))
+
+(r/register-sub
  :page-state
  (fn [db _]
    (reaction (:page-state @db))))

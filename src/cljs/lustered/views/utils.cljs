@@ -4,12 +4,14 @@
 (defn open-modal [index item]
   (handlers/save :editing-item {:index index :item item})
   (handlers/save :modal-shown? true)
-  (handlers/save :edit-errors nil))
+  (handlers/save :edit-errors nil)
+  (handlers/save :validation-errors nil))
 
 (defn close-modal []
   (handlers/save :editing-item nil)
   (handlers/save :modal-shown? false)
-  (handlers/save :edit-errors nil))
+  (handlers/save :edit-errors nil)
+  (handlers/save :validation-errors nil))
 
 (defn rendered-value [item field-name values]
   (or (get item (keyword "_rendered" (name field-name)))

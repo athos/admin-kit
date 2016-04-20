@@ -37,7 +37,9 @@
   (save :errors [(:msg res)]))
 
 (defn edit-error [res]
-  (save :edit-errors [(:msg res)]))
+  (if (= (:status res) :validation-failed)
+    (save :validation-errors (:errors res))
+    (save :edit-errors [(:msg res)])))
 
 (defn wrap-with-error-handler [handler f]
   (fn [ok? {:keys [status] :as res}]
