@@ -116,7 +116,7 @@
           (with-validation [params f]
             (with-error-handling
               (if-let [result (and validator (validator params))]
-                (response 400 :validation-failed result)
+                (response 400 :validation-failed {:errors result})
                 (f))))]
    (routes
     (GET page-name {:keys [params]}
