@@ -55,6 +55,7 @@
                    :dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [environ "1.0.2"]
                                   [ring/ring-jetty-adapter "1.4.0"]
+                                  [com.novemberain/validateur "2.5.0"]
                                   [clj-time "0.11.0"]]}}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"

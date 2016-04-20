@@ -5,6 +5,7 @@
             [ring.util.response :refer [response]]
             [ring.adapter.jetty :refer [run-jetty]]
             [compojure.core :refer [context]]
+            [validateur.validation :as v]
             [clj-time
              [coerce :as coerce]
              [format :as format]]
@@ -148,6 +149,13 @@
 (def admin-site-spec
   [[:products
     {:adapter products-adapter
+     :validator (v/validation-set
+                 (v/presence-of :name :message "名前を入力して下さい。")
+                 (v/presence-of :furigana :message "フリガナを入力して下さい。")
+                 (v/format-of :price
+                              :format #"\d+"
+                              :message "値段は整数で入力して下さい。"
+                              :blank-message "値段を入力して下さい。"))
      :spec {:title "商品"
             :fields [{:field :id
                       :label "ID"
