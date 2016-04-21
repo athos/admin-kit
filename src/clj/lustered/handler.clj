@@ -101,7 +101,7 @@
                      (map #(render-item-fields renderers %)))]
       (-> (cond-> {:items items}
             (satisfies? adapter/Count adapter)
-            #_=> (assoc :total-page
+            #_=> (assoc :total-pages
                         (-> (adapter/count adapter params)
                             (/ (double (:items-per-page config)))
                             Math/ceil
