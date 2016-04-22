@@ -58,4 +58,5 @@
       (extend-type (class adapter)
         Count
         (count [this params]
-          (on-count params))))))
+          (on-count params))))
+    adapter))
