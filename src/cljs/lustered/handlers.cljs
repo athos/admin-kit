@@ -7,9 +7,9 @@
 (r/register-handler
  :request
  [r/trim-v]
- (fn [db [paths {:keys [method data]} callback]]
+ (fn [{:keys [base-path] :as db} [paths {:keys [method data]} callback]]
    (ajax/ajax-request
-    (cond-> {:uri (str "/admin/api"
+    (cond-> {:uri (str base-path "/api"
                        (if (empty? paths) "" (str "/" (str/join "/" paths))))
              :method method
              :handler (fn [[ok? data]] (callback ok? data))
