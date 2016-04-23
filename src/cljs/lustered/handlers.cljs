@@ -49,18 +49,12 @@
         (handler res))  ;; this should not happen
       (handler (:response res)))))
 
-(r/register-handler
- :init
- [r/trim-v]
- (fn [_ [base-path callback]]
-   (request [] (wrap-with-error-handler error
-                 (fn [{:keys [overview]}]
-                   (save :pages overview)
-                   (callback))))
-   {:base-path base-path}))
-
 (defn init [base-path callback]
-  (r/dispatch [:init base-path callback]))
+  (save :base-path base-path)
+  (request [] (wrap-with-error-handler error
+                (fn [{:keys [overview]}]
+                  (save :pages overview)
+                  (callback)))))
 
 (r/register-handler
  :fetch-items
