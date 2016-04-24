@@ -70,7 +70,6 @@
                             :furigana (str (get furiganas category-name) i)
                             :price (* 10 (rand-int 100))
                             :category category
-                            :category-name category-name
                             :benefits (= (rand-int 2) 0)}))
         products (let [products (atom {})]
                    (doseq [product (map random-product (range 25))]
@@ -86,7 +85,6 @@
                 (merge product
                        {:price price
                         :category category
-                        :category-name (category-name category)
                         :benefits benefits}))))
 
       adapter/Read
@@ -105,7 +103,6 @@
                              (select-keys [:name :furigana])
                              (assoc :price price
                                     :category category
-                                    :category-name (category-name category)
                                     :benefits benefits
                                     :modified-at (Date.)))]
           (-> (swap! products update id merge new-fields)
@@ -173,7 +170,6 @@
                      {:field :category
                       :label "カテゴリー"
                       :type :select
-                      :render :category-name
                       :values #(->> (adapter/read categories-adapter {})
                                     (map (fn [{:keys [id name]}] [id name])))}
                      {:field :benefits
