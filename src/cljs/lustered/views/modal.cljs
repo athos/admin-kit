@@ -13,18 +13,22 @@
     (fn []
       (let [fields (:fields @spec)]
         [:form.form-horizontal
-         (-> (for [{field-name :field :as field} fields]
-               (letfn [(updater [val]
-                         (r/dispatch [:edit-item-field field-name val]))]
-                 (with-meta
+         (-> (for [{field-name :field field-label :label :as field} fields]
+               (let [errors (get @errors field-name)
+                     updater #(r/dispatch [:edit-item-field field-name %])]
+                 ^{:key field-name}
+                 [:div.form-group {:class (when errors :has-error)}
+                  [:label.control-label.col-xs-3
+                   [:span field-label]]
+                  [:div.col-xs-9
                    (forms/render-field field
                                        (get item field-name)
                                        (utils/rendered-value item
                                                              field-name
                                                              (:values field))
-                                       (get @errors field-name)
                                        updater)
-                   {:key field-name})))
+                   (when errors
+                     [:span.help-block (apply str errors)])]]))
              doall)]))))
 
 (defn modal-submit-button [editing-item]
