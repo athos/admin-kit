@@ -1,11 +1,5 @@
 (ns lustered.views.forms
-  (:require [reagent.core :as reagent]
-            [cljsjs.react-bootstrap]))
-
-(def FormControlsStatic
-  (reagent/adapt-react-class (.. js/ReactBootstrap -FormControls -Static)))
-(def Input
-  (reagent/adapt-react-class (.. js/ReactBootstrap -Input)))
+  (:require [reagent.core :as reagent]))
 
 (defmulti render-field
   (fn [field value rendered errors updater] (:type field)))
