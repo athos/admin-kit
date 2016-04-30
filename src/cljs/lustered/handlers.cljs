@@ -138,7 +138,7 @@
  [r/trim-v]
  (fn [{:keys [page-state] :as db} [index item callback]]
    (let [item' (preprocess-item-fields item)]
-     (request [(:page-name page-state) (:id item)] {:method :put :data item'}
+     (request [(:page-name page-state) (:_id item)] {:method :put :data item'}
               (wrap-with-error-handler edit-error
                 (fn [_]
                   (fetch-items page-state)
@@ -149,7 +149,7 @@
  :request-delete-item
  [r/trim-v]
  (fn [{:keys [page-state] :as db} [item]]
-   (request [(:page-name page-state) (:id item)] {:method :delete}
+   (request [(:page-name page-state) (:_id item)] {:method :delete}
             (wrap-with-error-handler error
               (fn [_]
                 (fetch-items page-state))))

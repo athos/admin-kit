@@ -21,7 +21,7 @@
 (defn add! [a item]
   (let [now (Date.)
         id  (fresh-id a)
-        new-item (merge item {:id id :created-at now :modified-at now})]
+        new-item (merge item {:_id id :created-at now :modified-at now})]
     (swap! a assoc id new-item)
     new-item))
 
@@ -36,24 +36,24 @@
         (add! categories (select-keys category [:name])))
 
       adapter/Read
-      (read [this {:keys [id]}]
-        (if id
-          (let [id (Long/parseLong id)]
-            (filter #(= (:id %) id) (vals @categories)))
-          (sort-by :id (vals @categories))))
+      (read [this {:keys [_id]}]
+        (if _id
+          (let [id (Long/parseLong _id)]
+            (filter #(= (:_id %) id) (vals @categories)))
+          (sort-by :_id (vals @categories))))
 
       adapter/Update
-      (update [this {:keys [id] :as category}]
-        (let [id (Long/parseLong id)]
+      (update [this {:keys [_id] :as category}]
+        (let [id (Long/parseLong _id)]
           (swap! categories update id merge (select-keys category [:name]))))
 
       adapter/Delete
-      (delete [this {:keys [id]}]
-        (let [id (Long/parseLong id)]
+      (delete [this {:keys [_id]}]
+        (let [id (Long/parseLong _id)]
           (swap! categories dissoc id))))))
 
 (defn category-name [id]
-  (-> (adapter/read categories-adapter {:id (str id)})
+  (-> (adapter/read categories-adapter {:_id (str id)})
       first
       :name))
 
@@ -88,14 +88,14 @@
                         :benefits benefits}))))
 
       adapter/Read
-      (read [this {:keys [id _offset _limit]}]
-        (cond->> (sort-by :id (vals @products))
+      (read [this {:keys [_id _offset _limit]}]
+        (cond->> (sort-by :_id (vals @products))
           _offset (drop _offset)
           _limit (take _limit)))
 
       adapter/Update
-      (update [this {:keys [id price category benefits] :as product}]
-        (let [id (Long/parseLong id)
+      (update [this {:keys [_id price category benefits] :as product}]
+        (let [id (Long/parseLong _id)
               price (Long/parseLong price)
               category (Long/parseLong category)
               benefits (Boolean/valueOf benefits)
@@ -109,8 +109,8 @@
               (get id))))
 
       adapter/Delete
-      (delete [this {:keys [id]}]
-        (let [id (Long/parseLong id)]
+      (delete [this {:keys [_id]}]
+        (let [id (Long/parseLong _id)]
           (swap! products dissoc id)
           id))
 
@@ -127,17 +127,17 @@
 
       adapter/Read
       (read [this params]
-        (sort-by :id (vals @sets)))
+        (sort-by :_id (vals @sets)))
 
       adapter/Update
-      (update [this {:keys [id] :as product-set}]
-        (let [id (Long/parseLong id)]
+      (update [this {:keys [_id] :as product-set}]
+        (let [id (Long/parseLong _id)]
           (swap! sets update id merge (select-keys product-set
                                                    [:name :products]))))
 
       adapter/Delete
-      (delete [this {:keys [id]}]
-        (let [id (Long/parseLong id)]
+      (delete [this {:keys [_id]}]
+        (let [id (Long/parseLong _id)]
           (swap! sets dissoc id))))))
 
 (defn date-formatter [date]
@@ -154,7 +154,7 @@
                               :message "値段は整数で入力して下さい。"
                               :blank-message "値段を入力して下さい。"))
      :spec {:title "商品"
-            :fields [{:field :id
+            :fields [{:field :_id
                       :label "ID"
                       :format #(format "%03d" %)
                       :detail? true}
@@ -171,7 +171,7 @@
                       :label "カテゴリー"
                       :type :select
                       :values #(->> (adapter/read categories-adapter {})
-                                    (map (fn [{:keys [id name]}] [id name])))}
+                                    (map (fn [{:keys [_id name]}] [_id name])))}
                      {:field :benefits
                       :label "特典"
                       :type :checkbox
@@ -188,7 +188,7 @@
    [:product-sets
     {:adapter product-sets-adapter
      :spec {:title "商品セット"
-            :fields [{:field :id
+            :fields [{:field :_id
                       :label "ID"
                       :format #(format "%02d" %)
                       :detail? true}
@@ -199,12 +199,12 @@
                       :label "対象商品"
                       :type :multi-checkbox
                       :values #(->> (adapter/read products-adapter {})
-                                    (map (fn [{:keys [id name]}] [id name])))
+                                    (map (fn [{:keys [_id name]}] [_id name])))
                       :detail? true}]}}]
    [:categories
     {:adapter categories-adapter
      :spec {:title "商品カテゴリー"
-            :fields [{:field :id
+            :fields [{:field :_id
                       :label "ID"
                       :format #(format "%02d" %)}
                      {:field :name
