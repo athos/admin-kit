@@ -154,48 +154,48 @@
                               :message "値段は整数で入力して下さい。"
                               :blank-message "値段を入力して下さい。"))
      :spec {:title "商品"
-            :fields [{:field :_id
+            :fields [{:name :_id
                       :label "ID"
                       :format #(format "%03d" %)
                       :detail? true}
-                     {:field :name
+                     {:name :name
                       :label "名前"
                       :type :text}
-                     {:field :furigana
+                     {:name :furigana
                       :label "フリガナ"
                       :type :text}
-                     {:field :price
+                     {:name :price
                       :label "値段"
                       :type :text}
-                     {:field :category
+                     {:name :category
                       :label "カテゴリー"
                       :type :select
                       :values #(->> (adapter/read categories-adapter {})
                                     (map (fn [{:keys [_id name]}] [_id name])))}
-                     {:field :benefits
+                     {:name :benefits
                       :label "特典"
                       :type :checkbox
                       :values {true "あり" false "なし"}
                       :default true}
-                     {:field :created-at
+                     {:name :created-at
                       :label "登録日"
                       :format date-formatter
                       :detail? true}
-                     {:field :modified-at
+                     {:name :modified-at
                       :label "最終更新日"
                       :format date-formatter
                       :detail? true}]}}]
    [:product-sets
     {:adapter product-sets-adapter
      :spec {:title "商品セット"
-            :fields [{:field :_id
+            :fields [{:name :_id
                       :label "ID"
                       :format #(format "%02d" %)
                       :detail? true}
-                     {:field :name
+                     {:name :name
                       :label "名称"
                       :type :text}
-                     {:field :products
+                     {:name :products
                       :label "対象商品"
                       :type :multi-checkbox
                       :values #(->> (adapter/read products-adapter {})
@@ -204,10 +204,10 @@
    [:categories
     {:adapter categories-adapter
      :spec {:title "商品カテゴリー"
-            :fields [{:field :_id
+            :fields [{:name :_id
                       :label "ID"
                       :format #(format "%02d" %)}
-                     {:field :name
+                     {:name :name
                       :label "名称"
                       :type :text}]}}]])
 

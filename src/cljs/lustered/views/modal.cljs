@@ -13,7 +13,7 @@
     (fn []
       (let [fields (:fields @spec)]
         [:form.form-horizontal
-         (-> (for [{field-name :field field-label :label :as field} fields]
+         (-> (for [{field-name :name field-label :label :as field} fields]
                (let [errors (get @errors field-name)
                      updater #(r/dispatch [:edit-item-field field-name %])]
                  ^{:key field-name}

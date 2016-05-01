@@ -29,17 +29,17 @@
         [:table.table.table-striped
          [:thead
           [:tr
-           (for [{:keys [field label detail?]} fields
+           (for [{:keys [name label detail?]} fields
                  :when (not detail?)]
-             ^{:key field} [:th label])
+             ^{:key name} [:th label])
            [:th]]]
          (when @items
            [:tbody
             (for [[index item] (map-indexed vector @items)]
               ^{:key index}
               [:tr
-               (for [{:keys [field values detail?]} fields
+               (for [{:keys [name values detail?]} fields
                      :when (not detail?)]
-                 (let [rendered (utils/rendered-value item field values)]
-                   ^{:key field} [:td rendered]))
+                 (let [rendered (utils/rendered-value item name values)]
+                   ^{:key name} [:td rendered]))
                (edit-buttons index item)])])]))))

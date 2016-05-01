@@ -40,7 +40,7 @@
     (formatter (get item field-name))))
 
 (defn field-renderers [page-spec]
-  (reduce (fn [m {field-name :field :as field}]
+  (reduce (fn [m {field-name :name :as field}]
             (assoc m field-name
                    (or (:render field)
                        (->renderer field-name

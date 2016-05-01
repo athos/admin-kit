@@ -22,9 +22,9 @@
 (defn add-new-button []
   (let [spec (r/subscribe [:spec])]
     (fn []
-      (let [new-item (->> (for [{:keys [field default]} (:fields @spec)
+      (let [new-item (->> (for [{:keys [name default]} (:fields @spec)
                                 :when default]
-                            [field default])
+                            [name default])
                           (into {}))]
         [:button.btn.btn-success.pull-right
          {:type :button :on-click #(utils/open-modal nil new-item)}
