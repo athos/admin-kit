@@ -88,8 +88,12 @@
                         :benefits benefits}))))
 
       adapter/Read
-      (read [this {:keys [_id _offset _limit]}]
+      (read [this {:keys [_id _offset _limit _order]}]
         (cond->> (sort-by :_id (vals @products))
+          _order (sort-by (:field _order)
+                          (if (:desc? _order)
+                            (comp - compare)
+                            compare))
           _offset (drop _offset)
           _limit (take _limit)))
 
@@ -163,10 +167,12 @@
                       :type :text}
                      {:name :furigana
                       :label "フリガナ"
-                      :type :text}
+                      :type :text
+                      :sortable? true}
                      {:name :price
                       :label "値段"
-                      :type :text}
+                      :type :text
+                      :sortable? true}
                      {:name :category
                       :label "カテゴリー"
                       :type :select

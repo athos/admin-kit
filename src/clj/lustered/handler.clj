@@ -78,7 +78,7 @@
      (catch Exception e#
        (response 500 :error (.getMessage e#)))))
 
-(defn normalize-params [params {:keys [items-per-page]}]
+(defn prepare-params [params {:keys [items-per-page]}]
   (let [->long (fn [x] (if (string? x) (Long/parseLong x) x))
         offset (or (some-> (:_offset params) ->long)
                    (some-> (:_page params)
@@ -87,15 +87,17 @@
                            (* items-per-page))
                    0)
         limit (or (some-> (:_limit params) ->long)
-                  items-per-page)]
+                  items-per-page)
+        order {:field (or (keyword (:_order params)) :_id)
+               :desc? (boolean (:_desc params))}]
     (-> params
-        (assoc :_offset offset :_limit limit)
-        (dissoc :_page))))
+        (assoc :_offset offset :_limit limit :_order order)
+        (dissoc :_page :_desc?))))
 
 (defn handle-read [page-spec adapter params config]
   (with-error-handling
     (let [config (merge {:items-per-page 10} config)
-          params (normalize-params params config)
+          params (prepare-params params config)
           renderers (field-renderers (replace-values-fn page-spec))
           items (->> (adapter/read adapter params)
                      (map #(render-item-fields renderers %)))]
