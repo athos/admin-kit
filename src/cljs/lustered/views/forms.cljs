@@ -8,24 +8,21 @@
   [:p.form-control-static {:label (:label field)} rendered])
 
 (defmethod render-field :text [field value _ updater]
-  (let [{field-name :field field-label :label} field]
-    [:input.form-control
-     {:type :text
-      :placeholder field-label
-      :default-value value
-      :on-change (fn [e] (updater (.. e -target -value)))}]))
+  [:input.form-control
+   {:type :text
+    :placeholder (:label field)
+    :default-value value
+    :on-change (fn [e] (updater (.. e -target -value)))}])
 
 (defmethod render-field :password [field value _ updater]
-  (let [{field-name :field field-label :label} field]
-    [:input.form-control
-     {:type :password
-      :placeholder field-label
-      :default-value value
-      :on-change (fn [e] (updater (.. e -target -value)))}]))
+  [:input.form-control
+   {:type :password
+    :placeholder (:label field)
+    :default-value value
+    :on-change (fn [e] (updater (.. e -target -value)))}])
 
 (defmethod render-field :select [field value _ updater]
-  (let [{field-name :field field-label :label} field
-        values (:values field)
+  (let [values (:values field)
         value (or value (first (keys values)))]
     (updater value)
     [:select.form-control
