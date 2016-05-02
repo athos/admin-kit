@@ -29,9 +29,11 @@
         [:table.table.table-striped
          [:thead
           [:tr
-           (for [{:keys [name label detail?]} fields
+           (for [{:keys [name label detail? sortable?]} fields
                  :when (not detail?)]
-             ^{:key name} [:th label])
+             ^{:key name} `[:th ~@(when sortable?
+                                    [{:class :sortable} [:i.fa.fa-sort]])
+                            ~label])
            [:th]]]
          (when @items
            [:tbody
