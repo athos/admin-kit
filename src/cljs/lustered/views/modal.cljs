@@ -7,11 +7,13 @@
             [lustered.views.utils :as utils]
             [lustered.views.forms :as forms]))
 
-(defn modal-form [item]
+(defn modal-form []
   (let [spec (r/subscribe [:spec])
-        errors (r/subscribe [:validation-errors])]
+        errors (r/subscribe [:validation-errors])
+        editing-item (r/subscribe [:editing-item])]
     (fn []
-      (let [fields (:fields @spec)]
+      (let [fields (:fields @spec)
+            {:keys [item]} @editing-item]
         [:form.form-horizontal
          (-> (for [{field-name :name field-label :label :as field} fields]
                (let [errors (get @errors field-name)
@@ -73,10 +75,10 @@
       [Modal {:show @modal-shown? :on-hide utils/close-modal}
        [ModalHeader {:close-button true}
         [ModalTitle (:title @spec)]]
-       (when-let [{:keys [item]} @editing-item]
+       (when @editing-item
          [ModalBody
           [edit-error-alert]
-          [modal-form item]])
+          [modal-form]])
        [ModalFooter
         [:button.btn.btn-default {:type "button" :on-click utils/close-modal}
          "Close"]
