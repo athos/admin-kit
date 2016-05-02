@@ -21,19 +21,8 @@
     (let [msg (str (name op) " is not supported")]
       (throw (UnsupportedOperationException. msg)))))
 
-(extend-type Object
-  Create
-  (create [this params]
-    (unsupported :create))
-  Read
-  (read [this params]
-    (unsupported :read))
-  Update
-  (update [this params]
-    (unsupported :update))
-  Delete
-  (delete [this params]
-    (unsupported :delete)))
+(defprotocol ISupportedOps
+  (supported-ops* [this]))
 
 (defn make-adapter [{on-create :create, on-read :read, on-update :update
                      on-delete :delete, on-count :count :as ops}]
@@ -41,7 +30,11 @@
         on-read (or on-read (unsupported :read))
         on-update (or on-update (unsupported :update))
         on-delete (or on-delete (unsupported :delete))
-        on-count (or on-count (unsupported :count))]
+        on-count (or on-count (unsupported :count))
+        supported-ops (->> [:create :read :update :delete :count]
+                           (select-keys ops)
+                           keys
+                           set)]
     (reify
       Create
       (create [this params]
@@ -57,4 +50,17 @@
         (on-delete params))
       Count
       (count [this params]
-        (on-count params)))))
+        (on-count params))
+      ISupportedOps
+      (supported-ops* [this] supported-ops))))
+
+(defn supported-ops [adapter]
+  (if (satisfies? ISupportedOps adapter)
+    (supported-ops* adapter)
+    (->> {Create :create, Read :read, Update :update
+          Delete :delete, Count :count}
+         (reduce-kv (fn [ops proto op]
+                      (if (satisfies? proto adapter)
+                        (conj ops op)
+                        ops))
+                    #{}))))
