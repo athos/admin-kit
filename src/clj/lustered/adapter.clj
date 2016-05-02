@@ -17,8 +17,9 @@
   (count [adapter params]))
 
 (defn- unsupported [op]
-  (let [msg (str (name op) " is not supported")]
-    (throw (UnsupportedOperationException. msg))))
+  (fn [params]
+    (let [msg (str (name op) " is not supported")]
+      (throw (UnsupportedOperationException. msg)))))
 
 (extend-type Object
   Create
@@ -35,28 +36,25 @@
     (unsupported :delete)))
 
 (defn make-adapter [{on-create :create, on-read :read, on-update :update
-                     on-delete :delete, on-count :count}]
-  (let [adapter (reify Read
-                  (read [this params]
-                    (on-read params)))]
-    (when on-create
-      (extend-type (class adapter)
-        Create
-        (create [this params]
-          (on-create params))))
-    (when on-update
-      (extend-type (class adapter)
-        Update
-        (update [this params]
-          (on-update params))))
-    (when on-delete
-      (extend-type (class adapter)
-        Delete
-        (delete [this params]
-          (on-delete params))))
-    (when on-count
-      (extend-type (class adapter)
-        Count
-        (count [this params]
-          (on-count params))))
-    adapter))
+                     on-delete :delete, on-count :count :as ops}]
+  (let [on-create (or on-create (unsupported :create))
+        on-read (or on-read (unsupported :read))
+        on-update (or on-update (unsupported :update))
+        on-delete (or on-delete (unsupported :delete))
+        on-count (or on-count (unsupported :count))]
+    (reify
+      Create
+      (create [this params]
+        (on-create params))
+      Read
+      (read [this params]
+        (on-read params))
+      Update
+      (update [this params]
+        (on-update params))
+      Delete
+      (delete [this params]
+        (on-delete params))
+      Count
+      (count [this params]
+        (on-count params)))))
