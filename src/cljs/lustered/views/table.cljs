@@ -31,9 +31,10 @@
           [:tr
            (for [{:keys [name label detail? sortable?]} fields
                  :when (not detail?)]
-             ^{:key name} `[:th ~@(when sortable?
-                                    [{:class :sortable} [:i.fa.fa-sort]])
-                            ~label])
+             (with-meta `[:th ~@(when sortable?
+                                  [{:class :sortable} [:i.fa.fa-sort]])
+                          ~label]
+               {:key name}))
            [:th]]]
          (when @items
            [:tbody
