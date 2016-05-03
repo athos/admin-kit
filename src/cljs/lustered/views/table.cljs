@@ -22,15 +22,23 @@
        [:i.fa.fa-trash.fa-stack-1x.fa-inverse]]]]))
 
 (defn table-header [fields]
-  [:thead
-   [:tr
-    (for [{:keys [name label detail? sortable?]} fields
-          :when (not detail?)]
-      (with-meta `[:th ~@(when sortable?
-                           [{:class :sortable} [:i.fa.fa-sort]])
-                   ~label]
-        {:key name}))
-    [:th]]])
+  (let [page-state (r/subscribe [:page-state])]
+    (fn [fields]
+      (let [{:keys [page-name page-number order desc?]} @page-state]
+        [:thead
+         [:tr
+          (for [{:keys [name label detail? sortable?]} fields
+                :when (not detail?)]
+            (with-meta `[:th ~@(when sortable?
+                                 [{:class :sortable}
+                                  (if (= order name)
+                                    (if desc?
+                                      [:i.fa.fa-sort-desc]
+                                      [:i.fa.fa-sort-asc])
+                                    [:i.fa.fa-sort])])
+                         ~label]
+              {:key name}))
+          [:th]]]))))
 
 (defn table-body [fields items]
   (fn [fields items]
