@@ -21,28 +21,35 @@
        [:i.fa.fa-circle.fa-stack-2x.text-danger]
        [:i.fa.fa-trash.fa-stack-1x.fa-inverse]]]]))
 
+(defn table-header [fields]
+  [:thead
+   [:tr
+    (for [{:keys [name label detail? sortable?]} fields
+          :when (not detail?)]
+      (with-meta `[:th ~@(when sortable?
+                           [{:class :sortable} [:i.fa.fa-sort]])
+                   ~label]
+        {:key name}))
+    [:th]]])
+
+(defn table-body [fields items]
+  (fn [fields items]
+    [:tbody
+     (for [[index item] (map-indexed vector @items)]
+       ^{:key index}
+       [:tr
+        (for [{:keys [name values detail?]} fields
+              :when (not detail?)]
+          (let [rendered (utils/rendered-value item name values)]
+            ^{:key name} [:td rendered]))
+        (edit-buttons index item)])]))
+
 (defn items-table []
   (let [spec (r/subscribe [:spec])
         items (r/subscribe [:items])]
     (fn []
       (let [fields (:fields @spec)]
         [:table.table.table-striped
-         [:thead
-          [:tr
-           (for [{:keys [name label detail? sortable?]} fields
-                 :when (not detail?)]
-             (with-meta `[:th ~@(when sortable?
-                                  [{:class :sortable} [:i.fa.fa-sort]])
-                          ~label]
-               {:key name}))
-           [:th]]]
+         [table-header fields]
          (when @items
-           [:tbody
-            (for [[index item] (map-indexed vector @items)]
-              ^{:key index}
-              [:tr
-               (for [{:keys [name values detail?]} fields
-                     :when (not detail?)]
-                 (let [rendered (utils/rendered-value item name values)]
-                   ^{:key name} [:td rendered]))
-               (edit-buttons index item)])])]))))
+           [table-body fields items])]))))
