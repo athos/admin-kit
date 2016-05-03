@@ -1,11 +1,13 @@
 (ns lustered.utils
   (:require [goog.Uri :as uri]))
 
-(defn page-state->uri [base-path {:keys [page-name page-no]}]
+(defn page-state->uri [base-path {:keys [page-name page-no order desc?]}]
   (let [page-name (if (string? page-name) page-name (name page-name))
         uri (uri/parse (str base-path "/pages/" page-name))]
     (cond-> (.getQueryData uri)
-      page-no (.add "page" page-no))
+      page-no (.add "page" page-no)
+      order (.add "order" order)
+      desc? (.add "desc" "true"))
     (.toString uri)))
 
 (defn uri->page-state [uri]
@@ -14,5 +16,8 @@
     (when-let [[match? base-path page-name]
                (re-matches #"^(.+)/pages(?:/([^/]+)/?)?$" path)]
       (let [queries (.getQueryData uri)
-            page-no (some-> (.get queries "page") long)]
-        [base-path {:page-name page-name :page-no page-no}]))))
+            page-no (some-> (.get queries "page") long)
+            order (some-> (.get queries "order") keyword)
+            desc? (boolean (.get queries "desc"))]
+        [base-path {:page-name page-name :page-no page-no
+                    :order order :desc? desc?}]))))

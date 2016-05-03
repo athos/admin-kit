@@ -59,19 +59,21 @@
 (r/register-handler
  :fetch-items
  [r/trim-v]
- (fn [db [page-name page-no]]
+ (fn [db [page-name page-no order desc?]]
    (request [page-name]
             {:method :get
              :data (cond-> {}
-                     page-no (assoc :_page page-no))}
+                     page-no (assoc :_page page-no)
+                     order (assoc :_order (name order))
+                     desc? (assoc :_desc "true"))}
             (wrap-with-error-handler error
               (fn [{:keys [items total-pages]}]
                 (save :items items)
                 (save :total-pages total-pages))))
    db))
 
-(defn fetch-items [{:keys [page-name page-no]}]
-  (r/dispatch [:fetch-items page-name page-no]))
+(defn fetch-items [{:keys [page-name page-no order desc?]}]
+  (r/dispatch [:fetch-items page-name page-no order desc?]))
 
 (r/register-handler
  :page-init
@@ -93,16 +95,18 @@
 (r/register-handler
  :move-to
  [r/trim-v]
- (fn [{:keys [base-path] :as db} [page-name page-no]]
+ (fn [{:keys [base-path] :as db} [page-name page-no order desc?]]
    (let [page-state (cond-> {:page-name page-name}
-                      page-no (assoc :page-no page-no))
+                      page-no (assoc :page-no page-no)
+                      order (assoc :order order)
+                      desc? (assoc :desc? desc?))
          path (utils/page-state->uri base-path page-state)]
      (.pushState js/history (clj->js page-state) nil path)
      (page-init page-state))
    db))
 
-(defn move-to [page-name & {:keys [page-no]}]
-  (r/dispatch [:move-to page-name page-no]))
+(defn move-to [page-name & {:keys [page-no order desc?]}]
+  (r/dispatch [:move-to page-name page-no order desc?]))
 
 (r/register-handler
  :edit-item-field
