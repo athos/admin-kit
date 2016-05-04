@@ -54,24 +54,23 @@
           [:th (field-header @base-path @page-state name label sortable?)])
         [:th]]])))
 
-(defn table-body [fields items]
-  (fn [fields items]
-    [:tbody
-     (for [[index item] (map-indexed vector @items)]
-       ^{:key index}
-       [:tr
-        (for [{:keys [name values detail?]} fields
-              :when (not detail?)]
-          (let [rendered (views.utils/rendered-value item name values)]
-            ^{:key name} [:td rendered]))
-        (edit-buttons index item)])]))
+(defn table-body [fields]
+  (let [items (r/subscribe [:items])]
+    (fn [fields]
+      [:tbody
+       (for [[index item] (map-indexed vector @items)]
+         ^{:key index}
+         [:tr
+          (for [{:keys [name values detail?]} fields
+                :when (not detail?)]
+            (let [rendered (views.utils/rendered-value item name values)]
+              ^{:key name} [:td rendered]))
+          (edit-buttons index item)])])))
 
 (defn items-table []
-  (let [spec (r/subscribe [:spec])
-        items (r/subscribe [:items])]
+  (let [spec (r/subscribe [:spec])]
     (fn []
       (let [fields (:fields @spec)]
         [:table.table.table-striped
          [table-header fields]
-         (when @items
-           [table-body fields items])]))))
+         [table-body fields]]))))
