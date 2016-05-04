@@ -8,7 +8,6 @@
   
   :dependencies [;; for server side
                  [org.clojure/clojure "1.8.0"]
-                 [mount "0.1.10"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  [ring-middleware-format "0.7.0"]
@@ -53,6 +52,7 @@
 
   :profiles {:dev {:source-paths ["env" "examples"]
                    :dependencies [[org.clojure/tools.namespace "0.2.11"]
+                                  [mount "0.1.10"]
                                   [environ "1.0.2"]
                                   [ring/ring-jetty-adapter "1.4.0"]
                                   [com.novemberain/validateur "2.5.0"]

@@ -1,6 +1,5 @@
 (ns lustered.handler
-  (:require [mount.core :refer [defstate]]
-            [ring.util.response :as res]
+  (:require [ring.util.response :as res]
             [compojure
              [core :refer :all]
              [route :as route]]
