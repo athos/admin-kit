@@ -6,7 +6,7 @@
         uri (uri/parse (str base-path "/pages/" page-name))]
     (cond-> (.getQueryData uri)
       page-no (.add "page" page-no)
-      order (.add "order" order)
+      order (.add "order" (name order))
       desc? (.add "desc" "true"))
     (.toString uri)))
 
