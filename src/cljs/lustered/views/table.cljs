@@ -29,9 +29,9 @@
                            [(update page-state :desc? not)
                             (if desc? :fa-sort-desc :fa-sort-asc)]
                            [(-> page-state
-                                (assoc :order field-name :desc? false)
-                                (dissoc :page-number))
+                                (assoc :order field-name :desc? false))
                             :fa-sort])
+            state (dissoc state :page-no)
             uri (utils/page-state->uri base-path state)
             on-click (fn [e]
                        (.preventDefault e)

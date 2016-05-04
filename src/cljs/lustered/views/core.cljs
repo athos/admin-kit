@@ -37,10 +37,12 @@
         total-pages (r/subscribe [:total-pages])]
     (fn []
       (when @total-pages
-        (let [{:keys [page-name page-no]} @page-state
+        (let [{:keys [page-name page-no] :as state} @page-state
               on-select (fn [event selected-event]
                           (let [page-no (.-eventKey selected-event)]
-                            (handlers/move-to page-name :page-no page-no)))]
+                            (->> (assoc state :page-no page-no)
+                                 (apply concat)
+                                 (apply handlers/move-to page-name))))]
           [:div.text-center
            [Pagination {:items @total-pages
                        :max-buttons 5
