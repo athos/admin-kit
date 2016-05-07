@@ -95,15 +95,17 @@
 (r/register-handler
  :move-to
  [r/trim-v]
- (fn [{:keys [base-path] :as db} [page-name page-no order desc?]]
-   (let [page-state (cond-> {:page-name page-name}
-                      page-no (assoc :page-no page-no)
-                      order (assoc :order order)
-                      desc? (assoc :desc? desc?))
-         path (utils/page-state->uri base-path page-state)]
-     (.pushState js/history (clj->js page-state) nil path)
-     (page-init page-state))
-   db))
+ (fn [{:keys [base-path page-state] :as db} [page-name page-no order desc?]]
+   (let [page-state' (cond-> {:page-name page-name}
+                       page-no (assoc :page-no page-no)
+                       order (assoc :order order)
+                       desc? (assoc :desc? desc?))
+         path (utils/page-state->uri base-path page-state')]
+     (.pushState js/history (clj->js page-state') nil path)
+     (if (= (:page-name page-state) page-name)
+       (fetch-items page-state')
+       (page-init page-state'))
+     (assoc db :page-state page-state'))))
 
 (defn move-to [page-name & {:keys [page-no order desc?]}]
   (r/dispatch [:move-to page-name page-no order desc?]))
