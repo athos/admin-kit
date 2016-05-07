@@ -52,7 +52,7 @@
                        :last true
                        :ellipsis true
                        :boundary-links true
-                       :active-page (:page-no @page-state)
+                       :active-page (or (:page-no @page-state) 1)
                        :on-select on-select}]])))))
 
 (defn app []
