@@ -1,7 +1,7 @@
 (ns lustered.views.forms
   (:require [reagent.core :as reagent]))
 
-(defmulti render-field
+(defmulti ^:export render-field
   (fn [field value rendered errors updater] (:type field)))
 
 (defmethod render-field :default [field value rendered _]
