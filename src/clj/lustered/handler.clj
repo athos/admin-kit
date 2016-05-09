@@ -153,16 +153,16 @@
          (make-api-routes page-name page-spec adapter validator config))
        (apply routes (make-root-api-handler site-spec))))
 
-(defn render-page [page]
-  (-> (format "public/html/%s.html" page)
+(defn render-page [page {:keys [html-path]}]
+  (-> (or html-path (format "public/html/%s.html" page))
       res/resource-response
       (res/content-type "text/html")
       (res/charset "utf-8")))
 
-(defn make-pages-handler [site-spec]
+(defn make-pages-handler [site-spec config]
   (->> (for [[page-name _] site-spec
              :let [page-name (str "/" (name page-name))]]
-         (GET page-name [] (render-page "page")))
+         (GET page-name [] (render-page "page" config)))
        (apply routes)))
 
 (defn make-admin-site-handler
@@ -176,6 +176,6 @@
     (-> (routes
          (GET "/" [] (render-page "root"))
          (context "/pages" []
-           (make-pages-handler site-spec))
+           (make-pages-handler site-spec config))
          (route/resources "public"))
         (wrap-defaults site-defaults)))))
