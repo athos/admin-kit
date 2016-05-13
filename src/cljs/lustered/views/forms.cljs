@@ -28,7 +28,7 @@
     (updater value)
     [:select.form-control
      {:type :select
-      :defaultValue value
+      :default-value value
       :on-change (fn [e]
                    (let [target (.-target e)]
                      (updater (-> (.-options target)
