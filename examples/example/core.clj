@@ -38,22 +38,19 @@
       adapter/Read
       (read [this {:keys [_id]}]
         (if _id
-          (let [id (Long/parseLong _id)]
-            (filter #(= (:_id %) id) (vals @categories)))
+          (filter #(= (:_id %) _id) (vals @categories))
           (sort-by :_id (vals @categories))))
 
       adapter/Update
       (update [this {:keys [_id] :as category}]
-        (let [id (Long/parseLong _id)]
-          (swap! categories update id merge (select-keys category [:name]))))
+        (swap! categories update _id merge (select-keys category [:name])))
 
       adapter/Delete
       (delete [this {:keys [_id]}]
-        (let [id (Long/parseLong _id)]
-          (swap! categories dissoc id))))))
+        (swap! categories dissoc _id)))))
 
 (defn category-name [id]
-  (-> (adapter/read categories-adapter {:_id (str id)})
+  (-> (adapter/read categories-adapter {:_id id})
       first
       :name))
 
@@ -79,8 +76,7 @@
       adapter/Create
       (create [this {:keys [price category benefits] :as product}]
         (let [price (Long/parseLong price)
-              category (Long/parseLong category)
-              benefits (Boolean/valueOf benefits)]
+              category (Long/parseLong category)]
           (add! products
                 (merge product
                        {:price price
@@ -99,24 +95,21 @@
 
       adapter/Update
       (update [this {:keys [_id price category benefits] :as product}]
-        (let [id (Long/parseLong _id)
-              price (Long/parseLong price)
+        (let [price (Long/parseLong price)
               category (Long/parseLong category)
-              benefits (Boolean/valueOf benefits)
               new-fields (-> product
                              (select-keys [:name :furigana])
                              (assoc :price price
                                     :category category
                                     :benefits benefits
                                     :modified-at (Date.)))]
-          (-> (swap! products update id merge new-fields)
-              (get id))))
+          (-> (swap! products update _id merge new-fields)
+              (get _id))))
 
       adapter/Delete
       (delete [this {:keys [_id]}]
-        (let [id (Long/parseLong _id)]
-          (swap! products dissoc id)
-          id))
+        (swap! products dissoc _id)
+        _id)
 
       adapter/Count
       (count [this params]
@@ -135,14 +128,12 @@
 
       adapter/Update
       (update [this {:keys [_id] :as product-set}]
-        (let [id (Long/parseLong _id)]
-          (swap! sets update id merge (select-keys product-set
-                                                   [:name :products]))))
+        (swap! sets update _id merge (select-keys product-set
+                                                  [:name :products])))
 
       adapter/Delete
       (delete [this {:keys [_id]}]
-        (let [id (Long/parseLong _id)]
-          (swap! sets dissoc id))))))
+        (swap! sets dissoc _id)))))
 
 (defn date-formatter [date]
   (format/unparse (format/formatter "yyyy/MM/dd") (coerce/from-date date)))
