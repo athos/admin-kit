@@ -121,9 +121,9 @@
 
 (defn preprocess-item-fields [item]
   (reduce-kv (fn [m k v]
-               (cond (rendered-field? k) m
-                     (coll? v) (assoc m k v)
-                     :else (assoc m k (str v))))
+               (if (rendered-field? k)
+                 m
+                 (assoc m k v)))
              {}
              item))
 

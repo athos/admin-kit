@@ -8,6 +8,7 @@
   [:p.form-control-static {:label (:label field)} rendered])
 
 (defmethod render-field :text [field value _ updater]
+  (updater (str value))
   [:input.form-control
    {:type :text
     :placeholder (:label field)
@@ -23,7 +24,7 @@
 
 (defmethod render-field :select [field value _ updater]
   (let [values (:values field)
-        value (or value (first (keys values)))]
+        value (str (or value (first (keys values))))]
     (updater value)
     [:select.form-control
      {:type :select
