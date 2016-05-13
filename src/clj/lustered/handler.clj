@@ -126,10 +126,10 @@
     (POST page-name {:keys [params]}
       (with-validation params
         #(run-op adapter/create params)))
-    (PUT (str page-name "/:_id") {:keys [params]}
+    (PUT page-name {:keys [params]}
       (with-validation params
         #(run-op adapter/update params)))
-    (DELETE (str page-name "/:_id") {:keys [params]}
+    (DELETE page-name {:keys [params]}
       (run-op adapter/delete params))
     (GET (str page-name "/_spec") []
       (with-error-handling
