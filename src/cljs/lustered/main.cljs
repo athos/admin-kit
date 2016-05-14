@@ -5,10 +5,6 @@
             [lustered.handlers :as handlers]
             [lustered.views.core :as views]))
 
-(enable-console-print!)
-
-(println "Edits to this text should show up in your developer console.")
-
 ;;
 ;; Entry point
 ;;
@@ -26,5 +22,3 @@
                        (-> page-state
                            (js->clj :keywordize-keys true)
                            handlers/page-init))))
-
-(defn on-js-reload [])
