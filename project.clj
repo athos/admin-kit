@@ -29,7 +29,7 @@
 
   :source-paths ["src/clj" "src/cljc"]
 
-  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
+  :clean-targets ^{:protect false} ["resources/public/js" "target"]
   :auto-clean false
 
   :cljsbuild {:builds
@@ -39,13 +39,13 @@
                 :figwheel :true
 
                 :compiler {:main lustered.main
-                           :asset-path "../js/compiled/out"
-                           :output-to "resources/public/js/compiled/lustered-standalone.js"
-                           :output-dir "resources/public/js/compiled/out"
+                           :asset-path "../js/out"
+                           :output-to "resources/public/js/lustered-standalone.js"
+                           :output-dir "resources/public/js/out"
                            :source-map-timestamp true}}
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
-                :compiler {:output-to "resources/public/js/compiled/lustered-standalone.js"
+                :compiler {:output-to "resources/public/js/lustered-standalone.js"
                            :main lustered.main
                            :optimizations :advanced
                            :pretty-print false}}]}
