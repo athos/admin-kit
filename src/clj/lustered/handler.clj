@@ -177,5 +177,5 @@
          (GET "/" [] (render-page "root"))
          (context "/pages" []
            (make-pages-handler site-spec config))
-         (route/resources "public"))
+         (route/resources "/_lustered"))
         (wrap-defaults site-defaults)))))
