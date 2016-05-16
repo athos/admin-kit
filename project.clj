@@ -39,7 +39,7 @@
                 :figwheel :true
 
                 :compiler {:main lustered.main
-                           :asset-path "../js/out"
+                           :asset-path "../_lustered/js/out"
                            :output-to "resources/public/js/lustered-standalone.js"
                            :output-dir "resources/public/js/out"
                            :source-map-timestamp true}}
