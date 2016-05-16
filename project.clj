@@ -27,14 +27,14 @@
   :plugins [[lein-figwheel "0.5.2"]
             [lein-cljsbuild "1.1.3" :exclusions [[org.clojure/clojure]]]]
 
-  :source-paths ["src/clj" "src/cljc"]
+  :source-paths ["src/clj" "src/cljs/lib"]
 
   :clean-targets ^{:protect false} ["resources/public/js" "target"]
   :auto-clean false
 
   :cljsbuild {:builds
               [{:id "dev"
-                :source-paths ["src/cljs" "src/cljc"]
+                :source-paths ["src/cljs/lib" "src/cljs/standalone"]
 
                 :figwheel :true
 
@@ -44,7 +44,7 @@
                            :output-dir "resources/public/js/out"
                            :source-map-timestamp true}}
                {:id "min"
-                :source-paths ["src/cljs" "src/cljc"]
+                :source-paths ["src/cljs/lib" "src/cljs/standalone"]
                 :compiler {:output-to "resources/public/js/lustered-standalone.js"
                            :main lustered.main
                            :optimizations :advanced
