@@ -9,4 +9,5 @@
                      (when-let [page-state (.-state e)]
                        (-> page-state
                            (js->clj :keywordize-keys true)
+                           (update :order keyword)
                            handlers/page-init))))
