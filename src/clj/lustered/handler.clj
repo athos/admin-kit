@@ -7,7 +7,9 @@
              [defaults :refer [wrap-defaults site-defaults api-defaults]]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [clojure.java.io :as io]
-            [clojure.walk :as walk]
+            [clojure
+             [walk :as walk]
+             [string :as str]]
             [lustered.adapter :as adapter]))
 
 (defn ->str [x]
@@ -35,8 +37,15 @@
         :else (str x)))
 
 (defn ->renderer [field-name formatter]
-  (fn [item]
-    (formatter (get item field-name))))
+  (letfn [(escape-html [text]
+            (-> text
+                (str/replace "&"  "&amp;")
+                (str/replace "<"  "&lt;")
+                (str/replace ">"  "&gt;")
+                (str/replace "\"" "&quot;")
+                (str/replace "'" "&apos;")))]
+    (fn [item]
+      (escape-html (formatter (get item field-name))))))
 
 (defn field-renderers [page-spec]
   (reduce (fn [m {field-name :name :as field}]

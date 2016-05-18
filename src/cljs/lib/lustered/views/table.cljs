@@ -64,7 +64,8 @@
           (for [{:keys [name values detail?]} fields
                 :when (not detail?)]
             (let [rendered (views.utils/rendered-value item name values)]
-              ^{:key name} [:td rendered]))
+              ^{:key name}
+              [:td {:dangerouslySetInnerHTML {:__html rendered}}]))
           (edit-buttons index item)])])))
 
 (defn items-table []
