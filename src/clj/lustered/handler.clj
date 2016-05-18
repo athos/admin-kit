@@ -12,11 +12,6 @@
              [string :as str]]
             [lustered.adapter :as adapter]))
 
-(defn ->str [x]
-  (if (keyword? x)
-    (name x)
-    (str x)))
-
 (defn remove-fns [page-spec]
   (walk/prewalk
     (fn [x]
@@ -64,7 +59,7 @@
                  (let [rendered (renderer item)]
                    (if (not= field-value rendered)
                      (assoc item'
-                            (keyword "_rendered" (->str field-name))
+                            (keyword "_rendered" (name field-name))
                             rendered)
                      item'))
                  item'))
