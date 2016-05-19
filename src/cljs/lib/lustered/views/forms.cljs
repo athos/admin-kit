@@ -1,5 +1,7 @@
 (ns lustered.views.forms
-  (:require [reagent.core :as reagent]))
+  (:require [reagent.core :as reagent]
+            [cognitect.transit :as transit]
+            [clojure.string :as str]))
 
 (defmulti ^:export render-field
   (fn [field value rendered errors updater] (:type field)))
@@ -90,3 +92,16 @@
                                 (updater (conj value val))
                                 (updater (disj value val))))}]
         label])]))
+
+(defmethod render-field :file [field value _ updater]
+  (letfn [(on-change [e]
+            (let [file (aget (.. e -target -files) 0)
+                  reader (js/FileReader.)]
+              (.addEventListener reader "load"
+                (fn [] (-> (.-result reader)
+                           (str/replace #"^data:[^,]+?," "")
+                           transit/binary
+                           updater))
+                false)
+              (.readAsDataURL reader file)))]
+    [:input {:type :file :on-change on-change}]))
