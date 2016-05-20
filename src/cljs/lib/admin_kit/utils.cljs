@@ -1,4 +1,4 @@
-(ns lustered.utils
+(ns admin-kit.utils
   (:require [goog.Uri :as uri]))
 
 (defn page-state->uri [base-path {:keys [page-name page-no order desc?]}]

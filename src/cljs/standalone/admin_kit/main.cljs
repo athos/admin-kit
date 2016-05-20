@@ -1,8 +1,8 @@
-(ns lustered.main
-  (:require [lustered.core :as lustered]
-            [lustered.handlers :as handlers]))
+(ns admin-kit.main
+  (:require [admin-kit.core :as admin]
+            [admin-kit.handlers :as handlers]))
 
-(.addEventListener js/window "load" lustered/start)
+(.addEventListener js/window "load" admin/start)
 
 (.addEventListener js/window "popstate"
                    (fn [e]

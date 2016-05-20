@@ -1,9 +1,9 @@
-(ns lustered.core
+(ns admin-kit.core
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
-            [lustered.utils :as utils]
-            [lustered.handlers :as handlers]
-            [lustered.views.core :as views]))
+            [admin-kit.utils :as utils]
+            [admin-kit.handlers :as handlers]
+            [admin-kit.views.core :as views]))
 
 (defn start []
   (when-let [[base-path page-state] (utils/uri->page-state (.-location js/window))]

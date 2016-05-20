@@ -1,6 +1,6 @@
-(defproject lustered "0.1.0-SNAPSHOT"
+(defproject admin-kit "0.1.0-SNAPSHOT"
   :description "Admin site as data"
-  :url "https://github.com/athos/Lustered"
+  :url "https://github.com/athos/admin-kit"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -39,15 +39,15 @@
 
                 :figwheel :true
 
-                :compiler {:main lustered.main
-                           :asset-path "../_lustered/js/out"
-                           :output-to "resources/public/js/lustered-standalone.js"
+                :compiler {:main admin-kit.main
+                           :asset-path "../_admin-kit/js/out"
+                           :output-to "resources/public/js/admin-kit.js"
                            :output-dir "resources/public/js/out"
                            :source-map-timestamp true}}
                {:id "min"
                 :source-paths ["src/cljs/lib" "src/cljs/standalone"]
-                :compiler {:output-to "resources/public/js/lustered-standalone.js"
-                           :main lustered.main
+                :compiler {:output-to "resources/public/js/admin-kit.js"
+                           :main admin-kit.main
                            :optimizations :advanced
                            :pretty-print false}}]}
 

@@ -3,7 +3,7 @@
             [clojure.pprint :refer [pp pprint]]
             [mount.core :as m]
             [clojure.tools.namespace.repl :refer [refresh]]
-            [lustered.handler :as lustered]))
+            [admin-kit.handler :as admin]))
 
 (defn go []
   (m/start))

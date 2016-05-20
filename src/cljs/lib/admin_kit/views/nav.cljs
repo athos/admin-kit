@@ -1,10 +1,10 @@
-(ns lustered.views.nav
+(ns admin-kit.views.nav
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
-            [lustered.handlers :as handlers]
-            [lustered.subs]
-            [lustered.utils :as utils]))
+            [admin-kit.handlers :as handlers]
+            [admin-kit.subs]
+            [admin-kit.utils :as utils]))
 
 (def ListGroup
   (reagent/adapt-react-class (.. js/ReactBootstrap -ListGroup)))

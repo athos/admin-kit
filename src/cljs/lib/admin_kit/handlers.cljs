@@ -1,8 +1,8 @@
-(ns lustered.handlers
+(ns admin-kit.handlers
   (:require [re-frame.core :as r]
             [ajax.core :as ajax]
             [clojure.string :as str]
-            [lustered.utils :as utils]))
+            [admin-kit.utils :as utils]))
 
 (r/register-handler
  :request

@@ -9,9 +9,9 @@
             [clj-time
              [coerce :as coerce]
              [format :as format]]
-            [lustered
+            [admin-kit
              [adapter :as adapter]
-             [handler :as lustered]])
+             [handler :as admin]])
   (:import [java.util Date]))
 
 (defn fresh-id [a]
@@ -164,6 +164,10 @@
                       :label "値段"
                       :type :text
                       :sortable? true}
+                     {:name :image
+                      :label "画像"
+                      :type :file
+                      :detail? true}
                      {:name :category
                       :label "カテゴリー"
                       :type :select
@@ -210,7 +214,7 @@
 
 (def app
   (context "/admin" []
-    (lustered/make-admin-site-handler admin-site-spec)))
+    (admin/make-admin-site-handler admin-site-spec)))
 
 (defn start-server []
   (let [port (Long/parseLong (get env :port "8080"))]

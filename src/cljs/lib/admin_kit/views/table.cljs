@@ -1,11 +1,11 @@
-(ns lustered.views.table
+(ns admin-kit.views.table
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
-            [lustered.handlers :as handlers]
-            [lustered.subs]
-            [lustered.utils :as utils]
-            [lustered.views.utils :as views.utils]))
+            [admin-kit.handlers :as handlers]
+            [admin-kit.subs]
+            [admin-kit.utils :as utils]
+            [admin-kit.views.utils :as views.utils]))
 
 (defn edit-buttons [index item]
   (letfn [(on-edit [] (views.utils/open-modal index item))

@@ -1,11 +1,11 @@
-(ns lustered.views.modal
+(ns admin-kit.views.modal
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
-            [lustered.handlers :as handlers]
-            [lustered.subs]
-            [lustered.views.utils :as utils]
-            [lustered.views.forms :as forms]))
+            [admin-kit.handlers :as handlers]
+            [admin-kit.subs]
+            [admin-kit.views.utils :as utils]
+            [admin-kit.views.forms :as forms]))
 
 (defn modal-form []
   (let [spec (r/subscribe [:spec])

@@ -1,4 +1,4 @@
-(ns lustered.adapter
+(ns admin-kit.adapter
   (:refer-clojure :exclude [read update count]))
 
 (defprotocol Create

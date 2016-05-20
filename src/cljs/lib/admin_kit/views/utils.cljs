@@ -1,5 +1,5 @@
-(ns lustered.views.utils
-  (:require [lustered.handlers :as handlers]))
+(ns admin-kit.views.utils
+  (:require [admin-kit.handlers :as handlers]))
 
 (defn open-modal [index item]
   (handlers/save :editing-item {:index index :item item})

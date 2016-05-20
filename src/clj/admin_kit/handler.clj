@@ -1,4 +1,4 @@
-(ns lustered.handler
+(ns admin-kit.handler
   (:require [ring.util.response :as res]
             [compojure
              [core :refer :all]
@@ -10,7 +10,7 @@
             [clojure
              [walk :as walk]
              [string :as str]]
-            [lustered.adapter :as adapter]))
+            [admin-kit.adapter :as adapter]))
 
 (defn remove-fns [page-spec]
   (walk/prewalk
@@ -181,5 +181,5 @@
          (GET "/" [] (render-page "root"))
          (context "/pages" []
            (make-pages-handler site-spec config))
-         (route/resources "/_lustered"))
+         (route/resources "/_admin-kit"))
         (wrap-defaults site-defaults)))))

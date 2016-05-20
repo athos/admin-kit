@@ -1,13 +1,13 @@
-(ns lustered.views.core
+(ns admin-kit.views.core
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             [cljsjs.react-bootstrap]
-            [lustered.handlers :as handlers]
-            [lustered.subs]
-            [lustered.views.utils :as utils]
-            [lustered.views.nav :as nav]
-            [lustered.views.table :as table]
-            [lustered.views.modal :as modal]))
+            [admin-kit.handlers :as handlers]
+            [admin-kit.subs]
+            [admin-kit.views.utils :as utils]
+            [admin-kit.views.nav :as nav]
+            [admin-kit.views.table :as table]
+            [admin-kit.views.modal :as modal]))
 
 (def Alert (reagent/adapt-react-class (.-Alert js/ReactBootstrap)))
 

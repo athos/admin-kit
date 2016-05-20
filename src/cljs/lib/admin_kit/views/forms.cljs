@@ -1,4 +1,4 @@
-(ns lustered.views.forms
+(ns admin-kit.views.forms
   (:require [reagent.core :as reagent]
             [cognitect.transit :as transit]
             [clojure.string :as str]))
