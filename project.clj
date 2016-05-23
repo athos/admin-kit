@@ -37,7 +37,7 @@
               [{:id "dev"
                 :source-paths ["src/cljs/lib" "src/cljs/standalone"]
 
-                :figwheel :true
+                :figwheel true
 
                 :compiler {:main admin-kit.main
                            :asset-path "../_admin-kit/js/out"
