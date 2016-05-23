@@ -5,12 +5,16 @@
              [route :as route]]
             [ring.middleware
              [defaults :refer [wrap-defaults site-defaults api-defaults]]]
-            [ring.middleware.format :refer [wrap-restful-format]]
+            [ring.middleware
+             [format-params :refer [wrap-restful-params]]
+             [format-response :refer [wrap-restful-response]]]
             [clojure.java.io :as io]
             [clojure
              [walk :as walk]
              [string :as str]]
-            [admin-kit.adapter :as adapter]))
+            [admin-kit
+             [adapter :as adapter]
+             [transit :as transit]]))
 
 (defn remove-fns [page-spec]
   (walk/prewalk
@@ -175,7 +179,12 @@
    (routes
     (-> (context "/api" []
           (make-apis-handler site-spec config))
-        (wrap-restful-format :formats [:transit-json])
+        (wrap-restful-params
+          :formats [:transit-json]
+          :format-options {:transit-json {:handlers transit/read-handlers}})
+        (wrap-restful-response
+          :formats [:transit-json]
+          :format-options {:transit-json {:handlers transit/write-handlers}})
         (wrap-defaults api-defaults))
     (-> (routes
          (GET "/" [] (render-page "root"))

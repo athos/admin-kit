@@ -2,7 +2,8 @@
   (:require [re-frame.core :as r]
             [ajax.core :as ajax]
             [clojure.string :as str]
-            [admin-kit.utils :as utils]))
+            [admin-kit.utils :as utils]
+            [admin-kit.transit :as transit]))
 
 (r/register-handler
  :request
@@ -13,8 +14,8 @@
                        (if (empty? paths) "" (str "/" (str/join "/" paths))))
              :method method
              :handler (fn [[ok? data]] (callback ok? data))
-             :format (ajax/transit-request-format)
-             :response-format (ajax/transit-response-format)}
+             :format (ajax/transit-request-format {:handlers transit/write-handlers})
+             :response-format (ajax/transit-response-format {:handlers transit/read-handlers})}
       data (assoc :params data)))
    db))
 

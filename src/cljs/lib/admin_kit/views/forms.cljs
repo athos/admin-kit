@@ -1,6 +1,6 @@
 (ns admin-kit.views.forms
   (:require [reagent.core :as reagent]
-            [cognitect.transit :as transit]
+            [admin-kit.transit :as transit]
             [clojure.string :as str]))
 
 (defmulti ^:export render-field
@@ -100,7 +100,7 @@
               (.addEventListener reader "load"
                 (fn [] (-> (.-result reader)
                            (str/replace #"^data:[^,]+?," "")
-                           transit/binary
+                           ((fn [base64] (transit/file (.-name file) base64)))
                            updater))
                 false)
               (.readAsDataURL reader file)))]
