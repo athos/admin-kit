@@ -139,13 +139,14 @@
         #(run-op adapter/update params)))
     (DELETE page-name {:keys [params]}
       (run-op adapter/delete params))
-    (GET (str page-name "/_spec") []
-      (with-error-handling
-        (->> page-spec
-             replace-values-fn
-             remove-fns
-             (array-map :spec)
-             response))))))
+    (let [ops (adapter/supported-ops adapter)]
+      (GET (str page-name "/_spec") []
+        (with-error-handling
+          (->> (assoc page-spec :supported-ops ops)
+               replace-values-fn
+               remove-fns
+               (array-map :spec)
+               response)))))))
 
 (defn make-root-api-handler [site-spec]
   (let [site-overview (mapv (fn [[page-name {:keys [spec]}]]

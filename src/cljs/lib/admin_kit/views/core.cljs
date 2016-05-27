@@ -66,10 +66,12 @@
         [:div.col-md-9
          (when @spec
            [:h1 (:title @spec)])
-         [add-new-button]
+         (when (some-> @spec :supported-ops :create)
+           [add-new-button])
          [error-alert]
          (when @spec
            [table/items-table])
-         [pagination]]]
+         (when (some-> @spec :supported-ops :count)
+           [pagination])]]
        (when @spec
          [modal/edit-modal])])))
