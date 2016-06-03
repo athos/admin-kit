@@ -37,12 +37,12 @@
 
 (defn ->renderer [field-name formatter]
   (letfn [(escape-html [text]
-            (-> text
-                (str/replace "&"  "&amp;")
-                (str/replace "<"  "&lt;")
-                (str/replace ">"  "&gt;")
-                (str/replace "\"" "&quot;")
-                (str/replace "'" "&apos;")))]
+            (some-> text
+                    (str/replace "&" "&amp;")
+                    (str/replace "<" "&lt;")
+                    (str/replace ">" "&gt;")
+                    (str/replace "\"" "&quot;")
+                    (str/replace "'" "&apos;")))]
     (fn [item]
       (escape-html (formatter (get item field-name))))))
 
