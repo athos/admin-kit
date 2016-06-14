@@ -188,7 +188,7 @@
           :format-options {:transit-json {:handlers transit/write-handlers}})
         (wrap-defaults api-defaults))
     (-> (routes
-         (GET "/" [] (render-page "root"))
+         (GET "/" [] (render-page "root" config))
          (context "/pages" []
            (make-pages-handler site-spec config))
          (route/resources "/_admin-kit"))
