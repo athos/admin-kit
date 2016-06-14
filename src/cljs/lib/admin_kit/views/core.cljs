@@ -39,7 +39,7 @@
       (when (and @total-pages (> @total-pages 1))
         (let [on-select (fn [event selected-event]
                           (let [{:keys [page-name] :as state} @page-state
-                                page-no (.-eventKey selected-event)]
+                                page-no (aget selected-event "eventKey")]
                             (->> (assoc state :page-no page-no)
                                  (apply concat)
                                  (apply handlers/move-to page-name))))]
