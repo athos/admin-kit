@@ -41,18 +41,19 @@
 
 (defmethod render-field :radio [field value _ updater]
   (let [values (:values field)
-        value (str (or value (first (keys values))))]
+        value (str (or value (first (keys values))))
+        radio (fn [val]
+                [:input {:type :radio
+                         :value val
+                         :checked (= val value)
+                         :on-change #(updater (.. % -target -value))}])
+        aligned (fn [[val label]]
+                  ^{:key val} [:div.radio [:label [radio val] label]])
+        inlined (fn [[val label]]
+                  ^{:key val} [:label.radio-inline [radio val] label])]
     (updater value)
-    [:div
-     (for [[val label] (:values field)
-           :let [val (str val)]]
-       ^{:key val}
-       [:label.radio-inline
-        [:input {:type :radio
-                 :value val
-                 :checked (= val value)
-                 :on-change (fn [e] (updater (.. e -target -value)))}]
-        label])]))
+    [:div (map (if (:aligned? field) aligned inlined)
+               (:values field))]))
 
 (defmethod render-field :checkbox [field value _ updater]
   (let [value (boolean value)]
@@ -79,19 +80,21 @@
        ^{:key val} [:option {:value val} label])]))
 
 (defmethod render-field :multi-checkbox [field value _ updater]
-  (let [value (or value #{})]
+  (let [value (or value #{})
+        checkbox (fn [val]
+                   [:input {:type :checkbox
+                            :checked (contains? value val)
+                            :on-change (fn [e]
+                                         (if (.. e -target -checked)
+                                           (updater (conj value val))
+                                           (updater (disj value val))))}])
+        aligned (fn [[val label]]
+                  ^{:key val} [:div.checkbox [:label [checkbox val] label]])
+        inlined (fn [[val label]]
+                  ^{:key val} [:label.checkbox-inline [checkbox val] label])]
     (updater value)
-    [:div
-     (for [[val label] (:values field)]
-       ^{:key val}
-       [:label.checkbox-inline
-        [:input {:type :checkbox
-                 :checked (contains? value val)
-                 :on-change (fn [e]
-                              (if (.. e -target -checked)
-                                (updater (conj value val))
-                                (updater (disj value val))))}]
-        label])]))
+    [:div (map (if (:aligned? field) aligned inlined)
+               (:values field))]))
 
 (defmethod render-field :file [field value _ updater]
   (letfn [(on-change [e]
