@@ -4,7 +4,7 @@
             [clojure.string :as str]))
 
 (defmulti ^:export render-field
-  (fn [field value rendered errors updater] (:type field)))
+  (fn [field value rendered updater] (:type field)))
 
 (defmethod render-field :default [field value rendered _]
   [:p.form-control-static {:label (:label field)} rendered])
