@@ -5,12 +5,12 @@
             [admin-kit.handlers :as handlers]
             [admin-kit.views.core :as views]))
 
-(defn init []
+(defn ^:export init []
   (when-let [[base-path page-state] (utils/uri->page-state (.-location js/window))]
     (handlers/init base-path #(handlers/page-init page-state)))
   (reagent/render [views/app] (.getElementById js/document "app")))
 
-(defn start []
+(defn ^:export start []
   (.addEventListener js/window "load" init)
   (.addEventListener js/window "popstate"
                      (fn [e]
