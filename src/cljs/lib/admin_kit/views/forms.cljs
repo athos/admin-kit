@@ -25,35 +25,33 @@
     :on-change (fn [e] (updater (.. e -target -value)))}])
 
 (defmethod render-field :select [field value _ updater]
-  (let [values (:values field)
-        value (str (or value (first (keys values))))]
+  (let [values (seq (:values field))
+        value (or value (ffirst values))]
     (updater value)
     [:select.form-control
      {:type :select
       :default-value value
       :on-change (fn [e]
-                   (let [target (.-target e)]
-                     (updater (-> (.-options target)
-                                  (aget (.-selectedIndex target))
-                                  .-value))))}
+                   (let [target (.-target e)
+                         index (.-selectedIndex target)]
+                     (updater (first (nth values index)))))}
      (for [[val label] values]
        ^{:key val} [:option {:value val} label])]))
 
 (defmethod render-field :radio [field value _ updater]
-  (let [values (:values field)
-        value (str (or value (first (keys values))))
+  (let [values (seq (:values field))
+        value (or value (ffirst values))
         radio (fn [val]
                 [:input {:type :radio
                          :value val
                          :checked (= val value)
-                         :on-change #(updater (.. % -target -value))}])
+                         :on-change #(updater val)}])
         aligned (fn [[val label]]
                   ^{:key val} [:div.radio [:label [radio val] label]])
         inlined (fn [[val label]]
                   ^{:key val} [:label.radio-inline [radio val] label])]
     (updater value)
-    [:div (map (if (:aligned? field) aligned inlined)
-               (:values field))]))
+    [:div (map (if (:aligned? field) aligned inlined) values)]))
 
 (defmethod render-field :checkbox [field value _ updater]
   (let [value (boolean value)]
@@ -65,18 +63,22 @@
      (get (into {} (:values field)) true)]))
 
 (defmethod render-field :multi-select [field value _ updater]
-  (let [value (or value [])]
+  (let [values (seq (:values field))
+        value (or value [])]
     (updater value)
     [:select.form-control
      {:type :select
       :multiple true
       :value (into-array value)
       :on-change (fn [e]
-                   (let [target (.-target e)]
-                     (->> (array-seq (.-selectedOptions target))
-                          (mapv #(.-value %))
-                          updater)))}
-     (for [[val label] (:values field)]
+                   (->> (for [[val opt] (->> (.-options (.-target e))
+                                             array-seq
+                                             (map vector values))
+                              :when (.-selected opt)]
+                          (first val))
+                        vec
+                        updater))}
+     (for [[val label] values]
        ^{:key val} [:option {:value val} label])]))
 
 (defmethod render-field :multi-checkbox [field value _ updater]
