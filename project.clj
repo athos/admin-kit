@@ -17,7 +17,9 @@
 
                  ;; for client side
                  [org.clojure/clojurescript "1.8.40"]
-                 [cljs-ajax "0.5.4"]
+                 [cljs-ajax "0.5.4"
+                  :exclusions [org.apache.httpcomponents/httpasyncclient
+                               org.apache.httpcomponents/httpcore]]
                  [com.cognitect/transit-cljs "0.8.237"]
                  [reagent "0.5.1" :exclusions [cljsjs/react]]
                  [re-frame "0.7.0"]
