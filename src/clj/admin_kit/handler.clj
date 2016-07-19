@@ -109,7 +109,7 @@
           items (->> (adapter/read adapter params)
                      (map #(render-item-fields renderers %)))]
       (-> (cond-> {:items items}
-            (satisfies? adapter/Count adapter)
+            (contains? (adapter/supported-ops adapter) :count)
             #_=> (assoc :total-pages
                         (-> (adapter/count adapter params)
                             (/ (double (:items-per-page config)))
