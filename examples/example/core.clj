@@ -67,21 +67,17 @@
                             :furigana (str (get furiganas category-name) i)
                             :price (* 10 (rand-int 100))
                             :category category
-                            :benefits (= (rand-int 2) 0)}))
+                            :benefits (= (rand-int 2) 0)
+                            :date-on-sale (Date.)}))
         products (let [products (atom {})]
                    (doseq [product (map random-product (range 25))]
                      (add! products product))
                    products)]
     (reify
       adapter/Create
-      (create [this {:keys [price category benefits] :as product}]
-        (let [price (Long/parseLong price)
-              category (Long/parseLong category)]
-          (add! products
-                (merge product
-                       {:price price
-                        :category category
-                        :benefits benefits}))))
+      (create [this product]
+        (let [fields [:name :furigana :price :category :benefits :date-on-sale]]
+          (add! products (select-keys product fields))))
 
       adapter/Read
       (read [this {:keys [_id _offset _limit _order]}]
@@ -94,15 +90,11 @@
           _limit (take _limit)))
 
       adapter/Update
-      (update [this {:keys [_id price category benefits] :as product}]
-        (let [price (Long/parseLong price)
-              category (Long/parseLong category)
+      (update [this {:keys [_id] :as product}]
+        (let [fields [:name :furigana :price :category :benefits :date-on-sale]
               new-fields (-> product
-                             (select-keys [:name :furigana])
-                             (assoc :price price
-                                    :category category
-                                    :benefits benefits
-                                    :modified-at (Date.)))]
+                             (select-keys fields)
+                             (assoc :modified-at (Date.)))]
           (-> (swap! products update _id merge new-fields)
               (get _id))))
 
@@ -143,11 +135,7 @@
     {:adapter products-adapter
      :validator (v/validation-set
                  (v/presence-of :name :message "名前を入力して下さい。")
-                 (v/presence-of :furigana :message "フリガナを入力して下さい。")
-                 (v/format-of :price
-                              :format #"\d+"
-                              :message "値段は整数で入力して下さい。"
-                              :blank-message "値段を入力して下さい。"))
+                 (v/presence-of :furigana :message "フリガナを入力して下さい。"))
      :spec {:title "商品"
             :fields [{:name :_id
                       :label "ID"
@@ -162,7 +150,7 @@
                       :sortable? true}
                      {:name :price
                       :label "値段"
-                      :type :text
+                      :type :number
                       :sortable? true}
                      {:name :image
                       :label "画像"
@@ -178,6 +166,10 @@
                       :type :checkbox
                       :values {true "あり" false "なし"}
                       :default true}
+                     {:name :date-on-sale
+                      :label "発売日"
+                      :type :date
+                      :format date-formatter}
                      {:name :created-at
                       :label "登録日"
                       :format date-formatter

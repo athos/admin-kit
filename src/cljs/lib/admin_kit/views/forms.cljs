@@ -17,6 +17,14 @@
     :default-value value
     :on-change (fn [e] (updater (.. e -target -value)))}])
 
+(defmethod render-field :number [field value _ updater]
+  [:input.form-control
+   {:type :number
+    :placeholder (:label field)
+    :default-value value
+    :on-change (fn [e]
+                 (updater (js/parseFloat (.. e -target -value))))}])
+
 (defmethod render-field :password [field value _ updater]
   [:input.form-control
    {:type :password
@@ -110,3 +118,13 @@
                 false)
               (.readAsDataURL reader file)))]
     [:input {:type :file :on-change on-change}]))
+
+(defmethod render-field :date [field value _ updater]
+  (let [date (when value
+               (.. value toISOString (slice 0 10)))]
+    [:input.form-control
+     {:type :date
+      :default-value date
+      :on-change (fn [e]
+                   (let [date' (js/Date. (.. e -target -value))]
+                     (updater date')))}]))
