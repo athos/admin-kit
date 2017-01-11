@@ -11,7 +11,7 @@
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  [ring-middleware-format "0.7.0"]
-                 [ring/ring-core "1.4.0"]
+                 [ring/ring-core "1.5.1"]
                  [ring/ring-defaults "0.2.0"]
                  [compojure "1.5.0"]
 
