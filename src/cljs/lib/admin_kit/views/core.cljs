@@ -37,9 +37,8 @@
         total-pages (r/subscribe [:total-pages])]
     (fn []
       (when (and @total-pages (> @total-pages 1))
-        (let [on-select (fn [event selected-event]
-                          (let [{:keys [page-name] :as state} @page-state
-                                page-no (aget selected-event "eventKey")]
+        (let [on-select (fn [page-no]
+                          (let [{:keys [page-name] :as state} @page-state]
                             (->> (assoc state :page-no page-no)
                                  (apply concat)
                                  (apply handlers/move-to page-name))))]
