@@ -82,7 +82,7 @@
      ~@body
      (catch IllegalArgumentException e#
        (response 400 :error {:msg (.getMessage e#)}))
-     (catch Exception e#
+     (catch Throwable e#
        (response 500 :error {:msg (.getMessage e#)}))))
 
 (defn prepare-params [params {:keys [items-per-page]}]
