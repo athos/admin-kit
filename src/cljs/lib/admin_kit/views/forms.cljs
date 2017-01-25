@@ -15,14 +15,14 @@
    {:type :text
     :placeholder (:label field)
     :default-value value
-    :on-change (fn [e] (updater (.. e -target -value)))}])
+    :on-blur (fn [e] (updater (.. e -target -value)))}])
 
 (defmethod render-field :number [field value _ updater]
   [:input.form-control
    {:type :number
     :placeholder (:label field)
     :default-value value
-    :on-change (fn [e]
+    :on-blur (fn [e]
                  (updater (js/parseFloat (.. e -target -value))))}])
 
 (defmethod render-field :password [field value _ updater]
@@ -30,7 +30,7 @@
    {:type :password
     :placeholder (:label field)
     :default-value value
-    :on-change (fn [e] (updater (.. e -target -value)))}])
+    :on-blur (fn [e] (updater (.. e -target -value)))}])
 
 (defmethod render-field :select [field value _ updater]
   (let [values (seq (:values field))
