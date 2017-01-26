@@ -99,7 +99,7 @@
                :desc? (boolean (:_desc params))}]
     (-> params
         (assoc :_offset offset :_limit limit :_order order)
-        (dissoc :_page :_desc?))))
+        (dissoc :_page :_desc))))
 
 (defn handle-read [page-spec adapter params config]
   (with-error-handling
