@@ -137,6 +137,7 @@
                  (v/presence-of :name :message "名前を入力して下さい。")
                  (v/presence-of :furigana :message "フリガナを入力して下さい。"))
      :spec {:title "商品"
+            :default-order {:price :desc}
             :fields [{:name :_id
                       :label "ID"
                       :format #(format "%03d" %)

@@ -148,10 +148,24 @@
                (array-map :spec)
                response)))))))
 
+(defn- site-spec->site-overview [site-spec]
+  (letfn [(normalize-default-order [default-order]
+            (cond (or (keyword? default-order)
+                      (string? default-order))
+                  [(keyword default-order) :asc]
+
+                  (map? default-order)
+                  (first default-order)
+
+                  :else default-order))]
+    (mapv (fn [[page-name {:keys [spec]}]]
+            {:name page-name
+             :title (:title spec)
+             :default-order (normalize-default-order (:default-order spec))})
+          site-spec)))
+
 (defn make-root-api-handler [site-spec]
-  (let [site-overview (mapv (fn [[page-name {:keys [spec]}]]
-                              {:name page-name :title (:title spec)})
-                            site-spec)]
+  (let [site-overview (site-spec->site-overview site-spec)]
     (GET "/" []
       (with-error-handling
         (response {:overview site-overview})))))

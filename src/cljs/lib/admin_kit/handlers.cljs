@@ -112,6 +112,19 @@
   (r/dispatch [:move-to page-name page-no order desc?]))
 
 (r/register-handler
+ :move-to-page
+ [r/trim-v]
+ (fn [db [page-spec]]
+   (let [{page-name :name :keys [default-order]} page-spec]
+     (move-to (name page-name)
+              :order (first default-order)
+              :desc? (= (second default-order) :desc)))
+   db))
+
+(defn move-to-page [page-spec]
+  (r/dispatch [:move-to-page page-spec]))
+
+(r/register-handler
  :edit-item-field
  [r/trim-v (r/path :editing-item)]
  (fn [editing-item [field value]]
