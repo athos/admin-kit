@@ -18,12 +18,14 @@
     :on-blur (fn [e] (updater (.. e -target -value)))}])
 
 (defmethod render-field :number [field value _ updater]
+  (updater value)
   [:input.form-control
    {:type :number
     :placeholder (:label field)
     :default-value value
     :on-blur (fn [e]
-                 (updater (js/parseFloat (.. e -target -value))))}])
+               (updater (some-> (not-empty (.. e -target -value))
+                                js/parseFloat)))}])
 
 (defmethod render-field :password [field value _ updater]
   [:input.form-control
